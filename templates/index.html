@@ -1,0 +1,1611 @@
+<!DOCTYPE html>
+<html lang="ru" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Data Life · Admin</title>
+<meta name="theme-color" content="#1a5fdb">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%231a5fdb'/%3E%3Cpath d='M14 12h18a20 20 0 0 1 0 40H14z' fill='%23fff'/%3E%3Ccircle cx='30' cy='32' r='9' fill='none' stroke='%231a5fdb' stroke-width='2.4'/%3E%3Cpath d='M21 32h18M30 23v18M23 27.5h14M23 36.5h14' stroke='%231a5fdb' stroke-width='1.8'/%3E%3Cellipse cx='30' cy='32' rx='4' ry='9' fill='none' stroke='%231a5fdb' stroke-width='1.8'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Jost:wght@300;400;500;600;700&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+/* ============ TOKENS ============ */
+:root{
+  --brand:#1a5fdb; --brand-hi:#3d8bff; --glow:#6aaeff; --brand-deep:#0d3a9a;
+  --ok:#2fd39a; --warn:#ffb547; --bad:#ff5d73;
+  --r:20px; --r-sm:12px;
+  --ease:cubic-bezier(.2,.8,.2,1); --spring:cubic-bezier(.34,1.56,.64,1);
+  --font:'Jost',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  --mono:'JetBrains Mono',ui-monospace,monospace;
+  --side:264px;
+}
+[data-theme=dark]{
+  --bg:#030919; --bg2:#06112d; --surface:rgba(120,165,255,.055); --surface-2:rgba(120,165,255,.09);
+  --solid:#0a1736; --border:rgba(130,175,255,.13); --border-hi:rgba(130,175,255,.3);
+  --text:#ecf2ff; --muted:#8a9fc8; --dim:#5b6f98; --shadow:0 20px 60px -20px rgba(0,0,0,.7);
+  --input:rgba(5,14,38,.7);
+}
+[data-theme=light]{
+  --bg:#eef3fd; --bg2:#e2eafb; --surface:rgba(255,255,255,.72); --surface-2:rgba(255,255,255,.95);
+  --solid:#ffffff; --border:rgba(26,95,219,.13); --border-hi:rgba(26,95,219,.32);
+  --text:#0a1838; --muted:#566a92; --dim:#8a9abb; --shadow:0 20px 50px -24px rgba(16,48,120,.35);
+  --input:rgba(255,255,255,.9);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:var(--font);background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;overflow-x:hidden;font-size:15px;line-height:1.45;transition:background .5s var(--ease),color .5s var(--ease)}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+a{color:inherit;text-decoration:none}
+::selection{background:var(--brand);color:#fff}
+::-webkit-scrollbar{width:10px;height:10px}
+::-webkit-scrollbar-thumb{background:var(--border-hi);border-radius:10px;border:3px solid transparent;background-clip:padding-box}
+.mono{font-family:var(--mono);font-feature-settings:"tnum"}
+.hidden{display:none!important}
+
+/* ============ BACKGROUND ============ */
+.bg{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.bg .blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.55;animation:float 22s ease-in-out infinite}
+.bg .b1{width:620px;height:620px;background:radial-gradient(circle,#1a5fdb,transparent 70%);top:-200px;left:-120px}
+.bg .b2{width:520px;height:520px;background:radial-gradient(circle,#00c2ff,transparent 70%);bottom:-220px;right:-100px;animation-delay:-7s;opacity:.32}
+.bg .b3{width:420px;height:420px;background:radial-gradient(circle,#5b3dff,transparent 70%);top:40%;left:45%;animation-delay:-14s;opacity:.25}
+[data-theme=light] .bg .blob{opacity:.28}
+.bg .grid{position:absolute;inset:-2px;background-image:linear-gradient(var(--border) 1px,transparent 1px),linear-gradient(90deg,var(--border) 1px,transparent 1px);background-size:56px 56px;mask-image:radial-gradient(ellipse at 50% 0%,#000 10%,transparent 70%);-webkit-mask-image:radial-gradient(ellipse at 50% 0%,#000 10%,transparent 70%);opacity:.6}
+.bg .noise{position:absolute;inset:0;opacity:.05;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+@keyframes float{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(80px,60px) scale(1.1)}66%{transform:translate(-60px,40px) scale(.95)}}
+.cursor-glow{position:fixed;width:500px;height:500px;border-radius:50%;pointer-events:none;z-index:1;background:radial-gradient(circle,rgba(61,139,255,.12),transparent 60%);transform:translate(-50%,-50%);transition:opacity .3s;left:-999px;top:-999px}
+[data-theme=light] .cursor-glow{background:radial-gradient(circle,rgba(26,95,219,.08),transparent 60%)}
+
+/* ============ PRELOADER ============ */
+#preloader{position:fixed;inset:0;z-index:999;background:var(--brand);display:grid;place-items:center;transition:clip-path 1s var(--ease)}
+#preloader.out{clip-path:circle(0% at 50% 50%)}
+#preloader .pl-logo{display:flex;align-items:center;gap:18px;color:#fff}
+#preloader svg .draw{stroke-dasharray:400;stroke-dashoffset:400;animation:draw 1.4s var(--ease) forwards}
+#preloader .pl-word{font-size:44px;font-weight:500;letter-spacing:-.5px;overflow:hidden}
+#preloader .pl-word span{display:inline-block;transform:translateY(110%);animation:up .7s var(--ease) forwards}
+#preloader .pl-sub{font-size:16px;opacity:0;animation:fade .6s .9s forwards;font-weight:300;margin-top:2px}
+@keyframes draw{to{stroke-dashoffset:0}}
+@keyframes up{to{transform:none}}
+@keyframes fade{to{opacity:.9}}
+
+/* ============ LOGO ============ */
+.logo{display:flex;align-items:center;gap:12px;user-select:none}
+.logo .mark{flex:none;filter:drop-shadow(0 6px 18px rgba(61,139,255,.45))}
+.logo .wm{line-height:1}
+.logo .wm b{display:block;font-weight:500;font-size:26px;letter-spacing:-.4px}
+.logo .wm i{display:block;font-style:normal;font-size:12.5px;color:var(--muted);margin-top:3px;font-weight:400;letter-spacing:.2px}
+
+/* ============ LOGIN ============ */
+#login{position:fixed;inset:0;z-index:10;display:grid;grid-template-columns:1.15fr 1fr;overflow:hidden}
+.login-art{position:relative;background:radial-gradient(ellipse at 30% 30%,#2a74f0 0%,#1a5fdb 35%,#0b2f86 80%,#071d5a 100%);overflow:hidden;color:#fff}
+.login-art canvas{position:absolute;inset:0;width:100%;height:100%}
+.login-art .la-top{position:absolute;top:40px;left:48px;z-index:2}
+.login-art .la-top .logo .wm i{color:rgba(255,255,255,.75)}
+.login-art .la-bottom{position:absolute;left:48px;right:48px;bottom:44px;z-index:2}
+.login-art h1{font-size:clamp(34px,4vw,58px);font-weight:500;line-height:1.02;letter-spacing:-1.5px;max-width:560px}
+.login-art h1 em{font-style:normal;background:linear-gradient(90deg,#fff,#a9d1ff,#fff);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:shine 4s linear infinite}
+@keyframes shine{to{background-position:-200% 0}}
+.login-art p{margin-top:14px;max-width:460px;color:rgba(255,255,255,.75);font-weight:300;font-size:16px}
+.la-stats{display:flex;gap:28px;margin-top:28px}
+.la-stats div{border-left:1px solid rgba(255,255,255,.3);padding-left:14px}
+.la-stats b{display:block;font-size:22px;font-weight:500}
+.la-stats span{font-size:12.5px;color:rgba(255,255,255,.7)}
+.login-side{position:relative;display:grid;place-items:center;padding:40px 24px;background:var(--bg)}
+.login-card{width:100%;max-width:400px;position:relative;z-index:2}
+.login-card .logo{display:none;margin-bottom:28px}
+.login-card h2{font-size:34px;font-weight:500;letter-spacing:-.8px}
+.login-card .sub{color:var(--muted);margin:6px 0 30px;font-weight:300}
+.login-card .stack{display:grid;gap:16px}
+.login-foot{margin-top:22px;display:flex;justify-content:space-between;align-items:center;font-size:13px;color:var(--muted)}
+.login-foot button{color:var(--brand-hi);font-size:13px}
+.server-box{margin-top:14px;overflow:hidden;max-height:0;transition:max-height .5s var(--ease)}
+.server-box.open{max-height:120px}
+
+/* ============ FORM ============ */
+.field{display:grid;gap:7px;position:relative}
+.field>label{font-size:12.5px;color:var(--muted);font-weight:500;letter-spacing:.3px;text-transform:uppercase}
+.inp{width:100%;height:50px;border-radius:14px;border:1px solid var(--border);background:var(--input);padding:0 16px;outline:none;transition:border-color .25s,box-shadow .25s,background .25s;font-size:15.5px}
+.inp:focus{border-color:var(--brand-hi);box-shadow:0 0 0 4px rgba(61,139,255,.18)}
+.inp::placeholder{color:var(--dim)}
+select.inp{appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a9fc8' stroke-width='1.6' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 16px center;padding-right:40px}
+select.inp option{background:var(--solid);color:var(--text)}
+.inp-wrap{position:relative}
+.inp-wrap .inp{padding-left:46px}
+.inp-wrap>svg{position:absolute;left:16px;top:50%;transform:translateY(-50%);color:var(--dim);pointer-events:none;transition:color .25s}
+.inp-wrap:focus-within>svg{color:var(--brand-hi)}
+.inp-wrap .eye{position:absolute;right:10px;top:50%;transform:translateY(-50%);width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--dim)}
+.inp-wrap .eye:hover{color:var(--text);background:var(--surface-2)}
+.err{color:var(--bad);font-size:12.5px;min-height:0}
+.field.bad .inp{border-color:var(--bad);animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.check{display:flex;align-items:center;gap:10px;cursor:pointer;user-select:none;font-size:14.5px}
+.check input{display:none}
+.check .box{width:42px;height:24px;border-radius:20px;background:var(--surface-2);border:1px solid var(--border);position:relative;transition:.3s var(--ease)}
+.check .box::after{content:"";position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:var(--muted);transition:.35s var(--spring)}
+.check input:checked+.box{background:var(--brand);border-color:var(--brand)}
+.check input:checked+.box::after{left:20px;background:#fff}
+
+/* ============ BUTTONS ============ */
+.btn{position:relative;overflow:hidden;display:inline-flex;align-items:center;justify-content:center;gap:9px;height:46px;padding:0 20px;border-radius:14px;font-weight:500;font-size:15px;transition:transform .25s var(--spring),box-shadow .3s,background .3s,opacity .2s;white-space:nowrap;isolation:isolate}
+.btn:active{transform:scale(.96)}
+.btn-primary{background:linear-gradient(135deg,var(--brand-hi),var(--brand) 55%,var(--brand-deep));color:#fff;box-shadow:0 10px 30px -10px rgba(26,95,219,.8),inset 0 1px 0 rgba(255,255,255,.25)}
+.btn-primary::before{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);transform:translateX(-100%);transition:transform .8s var(--ease);z-index:-1}
+.btn-primary:hover::before{transform:translateX(100%)}
+.btn-primary:hover{box-shadow:0 16px 40px -10px rgba(61,139,255,.9),inset 0 1px 0 rgba(255,255,255,.3)}
+.btn-ghost{background:var(--surface);border:1px solid var(--border);color:var(--text)}
+.btn-ghost:hover{background:var(--surface-2);border-color:var(--border-hi)}
+.btn-danger{background:rgba(255,93,115,.12);color:var(--bad);border:1px solid rgba(255,93,115,.25)}
+.btn-danger:hover{background:rgba(255,93,115,.2)}
+.btn-block{width:100%;height:54px;font-size:16px}
+.btn-sm{height:36px;padding:0 13px;border-radius:11px;font-size:13.5px}
+.btn[disabled]{opacity:.6;pointer-events:none}
+.btn .spin{width:18px;height:18px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:rot .7s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.ripple{position:absolute;border-radius:50%;background:rgba(255,255,255,.35);transform:scale(0);animation:rip .6s ease-out;pointer-events:none;z-index:-1}
+@keyframes rip{to{transform:scale(4);opacity:0}}
+.icon-btn{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;color:var(--muted);transition:.2s}
+.icon-btn:hover{background:var(--surface-2);color:var(--text)}
+.icon-btn.del:hover{color:var(--bad);background:rgba(255,93,115,.12)}
+
+/* ============ APP SHELL ============ */
+#app{position:relative;z-index:2;min-height:100vh}
+.sidebar{position:fixed;left:16px;top:16px;bottom:16px;width:var(--side);z-index:20;border-radius:26px;background:var(--surface);border:1px solid var(--border);backdrop-filter:blur(24px) saturate(1.4);-webkit-backdrop-filter:blur(24px) saturate(1.4);display:flex;flex-direction:column;padding:22px 16px;box-shadow:var(--shadow)}
+.sidebar .logo{padding:0 8px 26px}
+.nav{display:grid;gap:4px;position:relative}
+.nav-pill{position:absolute;left:0;right:0;height:48px;opacity:0;border-radius:14px;background:linear-gradient(135deg,var(--brand-hi),var(--brand));box-shadow:0 10px 26px -8px rgba(26,95,219,.9);transition:transform .5s var(--spring),opacity .3s;z-index:0}
+.nav a{position:relative;z-index:1;display:flex;align-items:center;gap:13px;height:48px;padding:0 14px;border-radius:14px;color:var(--muted);font-weight:500;transition:color .3s}
+.nav a:hover{color:var(--text)}
+.nav a.on{color:#fff}
+.nav a .cnt{margin-left:auto;font-size:12px;font-family:var(--mono);padding:2px 8px;border-radius:20px;background:var(--surface-2);color:var(--muted);transition:.3s}
+.nav a.on .cnt{background:rgba(255,255,255,.2);color:#fff}
+.nav-label{font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);padding:18px 14px 8px}
+.side-bottom{margin-top:auto;display:grid;gap:10px}
+.me-card{display:flex;align-items:center;gap:11px;padding:10px;border-radius:16px;background:var(--surface);border:1px solid var(--border)}
+.me-card .nm{font-weight:500;font-size:14.5px;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.me-card .rl{font-size:12px;color:var(--muted)}
+.me-card .icon-btn{margin-left:auto;flex:none}
+.side-tools{display:flex;gap:8px}
+.side-tools .btn{flex:1}
+
+.main{margin-left:calc(var(--side) + 32px);padding:22px 28px 60px 0;min-height:100vh}
+.topbar{display:flex;align-items:center;gap:14px;margin-bottom:26px;position:sticky;top:0;z-index:15;padding:14px 0;margin-top:-14px}
+.topbar::before{content:"";position:absolute;inset:0 -28px 0 -20px;background:linear-gradient(var(--bg) 40%,transparent);z-index:-1;opacity:.9}
+.crumbs{font-size:13px;color:var(--muted);display:flex;gap:8px;align-items:center}
+.crumbs a:hover{color:var(--text)}
+.page-title{font-size:32px;font-weight:500;letter-spacing:-.9px;line-height:1.1}
+.search-trigger{margin-left:auto;display:flex;align-items:center;gap:10px;height:44px;padding:0 10px 0 14px;border-radius:14px;background:var(--surface);border:1px solid var(--border);color:var(--dim);min-width:260px;backdrop-filter:blur(14px);transition:.25s}
+.search-trigger:hover{border-color:var(--border-hi);color:var(--muted)}
+.kbd{font-family:var(--mono);font-size:11.5px;padding:3px 7px;border-radius:7px;background:var(--surface-2);border:1px solid var(--border);color:var(--muted);margin-left:auto}
+.mob-only{display:none}
+
+/* ============ VIEW / CARDS ============ */
+#view{position:relative}
+.view-enter{animation:viewIn .6s var(--ease) both}
+@keyframes viewIn{from{opacity:0;transform:translateY(18px);filter:blur(6px)}to{opacity:1;transform:none;filter:none}}
+.reveal{opacity:0;transform:translateY(22px);animation:viewIn .7s var(--ease) forwards}
+.card{position:relative;border-radius:var(--r);background:var(--surface);border:1px solid var(--border);backdrop-filter:blur(18px) saturate(1.3);-webkit-backdrop-filter:blur(18px) saturate(1.3);padding:22px;overflow:hidden}
+.card.spot::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(420px circle at var(--mx,-500px) var(--my,-500px),rgba(106,174,255,.14),transparent 45%);pointer-events:none;transition:opacity .3s}
+.card.spot::after{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:radial-gradient(300px circle at var(--mx,-500px) var(--my,-500px),rgba(106,174,255,.7),transparent 50%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.card-h h3{font-size:17px;font-weight:500;letter-spacing:-.2px}
+.card-h .muted{font-size:13px}
+.muted{color:var(--muted)}
+.grid{display:grid;gap:18px}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g-dash{grid-template-columns:1.7fr 1fr}
+.g-2{grid-template-columns:1fr 1fr}
+
+/* hero */
+.hero{display:flex;align-items:flex-end;justify-content:space-between;gap:20px;margin-bottom:24px;flex-wrap:wrap}
+.hero h1{font-size:clamp(30px,3.4vw,46px);font-weight:500;letter-spacing:-1.4px;line-height:1.02}
+.hero h1 .wave{display:inline-block;animation:wave 2.4s ease-in-out infinite;transform-origin:70% 70%}
+@keyframes wave{0%,60%,100%{transform:rotate(0)}10%,30%{transform:rotate(14deg)}20%{transform:rotate(-8deg)}40%{transform:rotate(-4deg)}50%{transform:rotate(10deg)}}
+.hero p{color:var(--muted);margin-top:8px;font-weight:300;font-size:16px}
+.hero .actions{display:flex;gap:10px;flex-wrap:wrap}
+
+/* stat */
+.stat{transform-style:preserve-3d;transition:transform .5s var(--ease)}
+.stat .ic{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;color:#fff;background:linear-gradient(135deg,var(--c1,var(--brand-hi)),var(--c2,var(--brand)));box-shadow:0 10px 24px -8px var(--c1,var(--brand))}
+.stat .lbl{color:var(--muted);font-size:13.5px;margin-top:18px}
+.stat .val{position:relative;z-index:1;text-shadow:0 2px 12px var(--bg);font-size:34px;font-weight:500;letter-spacing:-1px;margin-top:2px;line-height:1.1;white-space:nowrap}
+.stat .val small{font-size:15px;color:var(--muted);font-weight:400;margin-left:4px;letter-spacing:0}
+.stat .delta{position:absolute;top:22px;right:22px;font-size:12.5px;font-weight:500;padding:4px 10px;border-radius:20px;background:rgba(47,211,154,.12);color:var(--ok)}
+.stat .delta.neg{background:rgba(255,93,115,.12);color:var(--bad)}
+.stat .delta.neu{background:var(--surface-2);color:var(--muted)}
+.stat .spark{position:absolute;right:0;bottom:0;width:50%;height:44px;opacity:.4}
+
+/* chart */
+.bars{display:flex;gap:10px;height:250px;padding-top:24px;padding-left:46px;position:relative}
+.bars .gls{position:absolute;left:0;right:0;top:24px;bottom:27px;pointer-events:none}
+.bars .gl{position:absolute;left:0;right:0;border-top:1px dashed var(--border);font-size:10.5px;color:var(--dim);font-family:var(--mono)}
+.bars .gl span{position:absolute;top:-8px;left:0;padding-right:6px;background:var(--bg);border-radius:4px;opacity:.9}
+[data-theme=dark] .bars .gl span{background:#07122c}
+.bar-col{flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;position:relative;z-index:1;min-width:0}
+.bar-area{flex:1;width:100%;display:flex;align-items:flex-end;justify-content:center}
+
+.bar{width:100%;max-width:44px;border-radius:12px 12px 6px 6px;background:linear-gradient(180deg,var(--brand-hi),rgba(26,95,219,.25));position:relative;transform-origin:bottom;transform:scaleY(0);animation:grow 1s var(--ease) forwards;cursor:pointer;transition:filter .25s}
+.bar.cur{background:linear-gradient(180deg,#7fc0ff,var(--brand-hi) 40%,var(--brand));box-shadow:0 0 30px -4px rgba(61,139,255,.8)}
+.bar:hover{filter:brightness(1.3)}
+.bar .tip{position:absolute;bottom:calc(100% + 10px);left:50%;transform:translate(-50%,6px);background:var(--solid);border:1px solid var(--border-hi);padding:6px 10px;border-radius:10px;font-size:12.5px;white-space:nowrap;opacity:0;pointer-events:none;transition:.25s var(--ease);font-family:var(--mono);box-shadow:var(--shadow);z-index:5}
+.bar:hover .tip{opacity:1;transform:translate(-50%,0)}
+.bar-col .m{font-size:12px;height:17px;line-height:17px;color:var(--muted);text-transform:capitalize}
+@keyframes grow{to{transform:scaleY(1)}}
+.donut-wrap{display:flex;align-items:center;gap:22px}
+.donut{position:relative;width:170px;height:170px;flex:none}
+.donut svg{transform:rotate(-90deg)}
+.donut circle.seg{fill:none;stroke-width:16;stroke-linecap:round;transition:stroke-width .3s;animation:dash 1.4s var(--ease) both}
+.donut circle.seg:hover{stroke-width:20}
+@keyframes dash{from{stroke-dasharray:0 1000}}
+.donut .ctr{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.donut .ctr b{font-size:19px;font-weight:500;display:block;line-height:1.1}
+.donut .ctr span{font-size:12px;color:var(--muted)}
+.legend{display:grid;gap:10px;flex:1;min-width:0}
+.legend div{display:flex;align-items:center;gap:9px;font-size:13.5px;min-width:0}
+.legend i{width:10px;height:10px;border-radius:4px;flex:none}
+.legend span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
+.legend b{font-weight:500;font-family:var(--mono);font-size:12.5px;color:var(--muted)}
+
+/* list rows */
+.list{display:grid;gap:4px}
+.li{display:flex;align-items:center;gap:13px;padding:10px;border-radius:14px;transition:background .25s,transform .25s var(--ease);cursor:pointer}
+.li:hover{background:var(--surface-2);transform:translateX(4px)}
+.li .t{min-width:0;flex:1}
+.li .t b{display:block;font-weight:500;font-size:14.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.li .t span{font-size:12.5px;color:var(--muted)}
+.li .amt{font-family:var(--mono);font-weight:600;font-size:14px;color:var(--ok);white-space:nowrap}
+
+/* avatar */
+.av{width:40px;height:40px;border-radius:13px;display:grid;place-items:center;font-weight:600;font-size:14px;color:#fff;flex:none;letter-spacing:.3px;position:relative;text-transform:uppercase}
+.av.lg{width:84px;height:84px;border-radius:26px;font-size:30px}
+.av.sm{width:30px;height:30px;border-radius:10px;font-size:11.5px}
+.stack-av{display:flex}
+.stack-av .av{border:2px solid var(--solid);margin-left:-6px;font-size:10px;letter-spacing:0}
+.stack-av .av:first-child{margin-left:0}
+.stack-av .more{background:var(--surface-2);color:var(--muted);font-size:11px}
+
+/* table */
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:18px}
+.toolbar .inp-wrap{flex:1;min-width:220px;max-width:380px}
+.toolbar .inp,.toolbar .btn{height:44px}
+.toolbar select.inp{width:auto;min-width:170px}
+.toolbar .sp{flex:1}
+.tbl-wrap{overflow-x:auto;margin:0 -22px -22px;padding:0 22px 12px}
+table{width:100%;border-collapse:separate;border-spacing:0 6px}
+th{text-align:left;font-size:12px;font-weight:500;color:var(--dim);letter-spacing:.8px;text-transform:uppercase;padding:6px 14px;white-space:nowrap;user-select:none}
+th.sort{cursor:pointer;transition:color .2s}
+th.sort:hover{color:var(--text)}
+th .ar{opacity:.4;margin-left:4px;display:inline-block;transition:.3s}
+th.asc .ar,th.desc .ar{opacity:1;color:var(--brand-hi)}
+th.desc .ar{transform:rotate(180deg)}
+td{padding:11px 12px;background:var(--surface);border-top:1px solid var(--border);border-bottom:1px solid var(--border);white-space:nowrap;transition:background .25s}
+td:first-child{border-left:1px solid var(--border);border-radius:14px 0 0 14px}
+td:last-child{border-right:1px solid var(--border);border-radius:0 14px 14px 0}
+tbody tr{cursor:pointer;opacity:0;animation:viewIn .5s var(--ease) forwards}
+tbody tr:hover td{background:var(--surface-2)}
+td .who{display:flex;align-items:center;gap:12px}
+td .who b{font-weight:500;display:block}
+td .who span{font-size:12.5px;color:var(--muted)}
+td.act{text-align:right;width:1%}
+td.act .icon-btn{display:inline-grid}
+.chip{display:inline-flex;align-items:center;gap:6px;height:26px;padding:0 10px;border-radius:20px;font-size:12.5px;background:rgba(61,139,255,.12);color:var(--brand-hi);border:1px solid rgba(61,139,255,.2);margin:2px 4px 2px 0;font-weight:500}
+[data-theme=light] .chip{color:var(--brand)}
+.chip.ok{background:rgba(47,211,154,.12);color:var(--ok);border-color:rgba(47,211,154,.25)}
+.chip.bad{background:rgba(255,93,115,.1);color:var(--bad);border-color:rgba(255,93,115,.25)}
+.chip.warn{background:rgba(255,181,71,.12);color:var(--warn);border-color:rgba(255,181,71,.25)}
+.chip.mute{background:var(--surface-2);color:var(--muted);border-color:var(--border)}
+.dot{width:7px;height:7px;border-radius:50%;background:currentColor;box-shadow:0 0 10px currentColor}
+.amount{font-family:var(--mono);font-weight:600}
+.pager{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:13px;color:var(--muted)}
+.pager .btns{display:flex;gap:6px}
+
+/* summary pills */
+.pills{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+.pill{flex:1;min-width:170px;padding:16px 18px;border-radius:16px;background:var(--surface);border:1px solid var(--border);backdrop-filter:blur(14px)}
+.pill span{font-size:12.5px;color:var(--muted)}
+.pill b{display:block;font-size:22px;font-weight:500;margin-top:2px;letter-spacing:-.4px}
+
+/* group cards */
+.gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:18px}
+.gcard{cursor:pointer;transition:transform .5s var(--ease),border-color .3s;min-height:220px;display:flex;flex-direction:column}
+.gcard:hover{border-color:var(--border-hi)}
+.gcard .gtop{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.gcard .gico{width:54px;height:54px;border-radius:17px;display:grid;place-items:center;font-size:20px;font-weight:600;color:#fff;position:relative;overflow:hidden}
+.gcard .gico::after{content:"";position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.35),transparent 50%)}
+.gcard h3{font-size:21px;font-weight:500;margin-top:16px;letter-spacing:-.4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gcard .gmeta{font-size:13px;color:var(--muted);margin-top:2px}
+.gcard .gbottom{margin-top:auto;padding-top:18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.gcard .gsum{text-align:right}
+.gcard .gsum b{display:block;font-family:var(--mono);font-size:15px}
+.gcard .gsum span{font-size:11.5px;color:var(--muted)}
+.progress{height:6px;border-radius:6px;background:var(--surface-2);overflow:hidden;margin-top:14px}
+.progress i{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,var(--brand),var(--glow));transform-origin:left;animation:grow-x 1.2s var(--ease) both}
+@keyframes grow-x{from{transform:scaleX(0)}}
+.add-card{border:1.5px dashed var(--border-hi);background:transparent;display:grid;place-items:center;text-align:center;color:var(--muted);transition:.3s}
+.add-card:hover{color:var(--brand-hi);border-color:var(--brand-hi);background:rgba(61,139,255,.05)}
+.add-card .plus{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;margin:0 auto 12px;background:var(--surface-2);transition:transform .5s var(--spring)}
+.add-card:hover .plus{transform:rotate(90deg) scale(1.1);background:var(--brand);color:#fff}
+
+/* profile */
+.profile{display:flex;gap:22px;align-items:center;flex-wrap:wrap}
+.profile h2{font-size:30px;font-weight:500;letter-spacing:-.8px;line-height:1.1}
+.profile .meta{display:flex;gap:18px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:14px}
+.profile .meta span{display:flex;align-items:center;gap:6px}
+.profile .acts{margin-left:auto;display:flex;gap:10px;flex-wrap:wrap}
+.profile-banner{position:absolute;inset:0 0 auto 0;height:90px;background:linear-gradient(120deg,var(--brand),#0bb4ff,#5b3dff);opacity:.25;mask-image:linear-gradient(#000,transparent);-webkit-mask-image:linear-gradient(#000,transparent)}
+.kv{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}
+.kv div{padding:14px 16px;border-radius:14px;background:var(--surface);border:1px solid var(--border)}
+.kv span{font-size:12px;color:var(--muted)}
+.kv b{display:block;font-weight:500;font-size:18px;margin-top:2px}
+
+/* empty / skeleton */
+.empty{text-align:center;padding:50px 20px;color:var(--muted)}
+.empty .em-ic{width:84px;height:84px;margin:0 auto 16px;border-radius:26px;display:grid;place-items:center;background:var(--surface-2);color:var(--brand-hi);animation:bob 3s ease-in-out infinite}
+.empty b{display:block;color:var(--text);font-weight:500;font-size:17px;margin-bottom:4px}
+@keyframes bob{50%{transform:translateY(-8px)}}
+.sk{border-radius:12px;background:linear-gradient(90deg,var(--surface) 0%,var(--surface-2) 50%,var(--surface) 100%);background-size:200% 100%;animation:skel 1.4s infinite}
+@keyframes skel{to{background-position:-200% 0}}
+
+/* ============ MODAL ============ */
+.modal-bg{position:fixed;inset:0;z-index:100;background:rgba(2,6,20,.55);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:grid;place-items:center;padding:20px;opacity:0;transition:opacity .35s var(--ease)}
+.modal-bg.in{opacity:1}
+.modal{width:100%;max-width:520px;max-height:calc(100vh - 40px);overflow:auto;border-radius:26px;background:var(--solid);border:1px solid var(--border-hi);box-shadow:0 40px 100px -20px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.03) inset;padding:28px;transform:translateY(30px) scale(.96);opacity:0;transition:transform .5s var(--spring),opacity .35s}
+.modal-bg.in .modal{transform:none;opacity:1}
+.modal.wide{max-width:640px}
+.modal-h{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:22px}
+.modal-h h3{font-size:23px;font-weight:500;letter-spacing:-.5px}
+.modal-h p{color:var(--muted);font-size:14px;margin-top:3px}
+.modal form{display:grid;gap:16px}
+.modal-f{display:flex;gap:10px;justify-content:flex-end;margin-top:8px}
+.modal .glow-top{position:absolute}
+.confirm-ic{width:64px;height:64px;border-radius:20px;display:grid;place-items:center;background:rgba(255,93,115,.12);color:var(--bad);margin-bottom:16px}
+
+/* picker */
+.picker{position:relative}
+.picker-list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:5;max-height:240px;overflow:auto;border-radius:14px;background:var(--solid);border:1px solid var(--border-hi);box-shadow:var(--shadow);padding:6px;display:none}
+.picker.open .picker-list{display:block;animation:viewIn .25s var(--ease)}
+.picker-opt{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px;cursor:pointer;font-size:14.5px}
+.picker-opt:hover,.picker-opt.hl{background:var(--surface-2)}
+.picker-opt span{color:var(--muted);font-size:12.5px;margin-left:auto}
+.multi-list{max-height:330px;overflow:auto;display:grid;gap:4px;border:1px solid var(--border);border-radius:16px;padding:6px;background:var(--input)}
+.multi-opt{display:flex;align-items:center;gap:12px;padding:8px 10px;border-radius:12px;cursor:pointer;transition:background .2s}
+.multi-opt:hover{background:var(--surface-2)}
+.multi-opt .tick{width:22px;height:22px;border-radius:7px;border:1.5px solid var(--border-hi);display:grid;place-items:center;margin-left:auto;transition:.25s var(--spring);color:transparent}
+.multi-opt.on .tick{background:var(--brand);border-color:var(--brand);color:#fff;transform:scale(1.08)}
+.multi-opt b{font-weight:500;font-size:14.5px}
+.multi-opt span{display:block;font-size:12px;color:var(--muted)}
+.quick-amts{display:flex;gap:6px;flex-wrap:wrap}
+.quick-amts button{height:30px;padding:0 11px;border-radius:9px;font-size:12.5px;background:var(--surface-2);border:1px solid var(--border);font-family:var(--mono);transition:.2s}
+.quick-amts button:hover{border-color:var(--brand-hi);color:var(--brand-hi)}
+
+/* ============ COMMAND PALETTE ============ */
+.cmd{max-width:620px;padding:0;align-self:start;margin-top:12vh}
+.cmd .cmd-in{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--border)}
+.cmd .cmd-in input{flex:1;background:none;border:0;outline:0;font-size:18px}
+.cmd .cmd-res{max-height:52vh;overflow:auto;padding:8px}
+.cmd .grp{font-size:11px;letter-spacing:1.3px;text-transform:uppercase;color:var(--dim);padding:10px 12px 6px}
+.cmd .opt{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;cursor:pointer}
+.cmd .opt.hl{background:linear-gradient(135deg,rgba(61,139,255,.2),rgba(26,95,219,.1));box-shadow:inset 0 0 0 1px rgba(61,139,255,.3)}
+.cmd .opt .t b{font-weight:500;display:block}
+.cmd .opt .t span{font-size:12.5px;color:var(--muted)}
+.cmd .opt .go{margin-left:auto;color:var(--dim)}
+.cmd-foot{display:flex;gap:16px;padding:12px 20px;border-top:1px solid var(--border);font-size:12px;color:var(--dim)}
+
+/* ============ TOAST ============ */
+#toasts{position:fixed;right:20px;bottom:20px;z-index:200;display:grid;gap:10px;width:min(380px,calc(100vw - 40px))}
+.toast{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:16px;background:var(--solid);border:1px solid var(--border-hi);box-shadow:var(--shadow);animation:toastIn .5s var(--spring);position:relative;overflow:hidden}
+.toast.out{animation:toastOut .4s var(--ease) forwards}
+.toast .ti{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;flex:none}
+.toast.ok .ti{background:rgba(47,211,154,.15);color:var(--ok)}
+.toast.bad .ti{background:rgba(255,93,115,.15);color:var(--bad)}
+.toast.info .ti{background:rgba(61,139,255,.15);color:var(--brand-hi)}
+.toast .bar-t{position:absolute;left:0;bottom:0;height:2px;background:currentColor;animation:tbar 4s linear forwards;opacity:.6}
+.toast.ok .bar-t{color:var(--ok)}.toast.bad .bar-t{color:var(--bad)}.toast.info .bar-t{color:var(--brand-hi)}
+@keyframes toastIn{from{transform:translateX(120%) scale(.9);opacity:0}}
+@keyframes toastOut{to{transform:translateX(120%);opacity:0}}
+@keyframes tbar{from{width:100%}to{width:0}}
+
+/* ============ RESPONSIVE ============ */
+@media (max-width:1500px) and (min-width:641px){[data-age]{display:none}}
+@media (max-width:1280px){.g4{grid-template-columns:repeat(2,1fr)}.kv{grid-template-columns:repeat(2,1fr)}}
+@media (max-width:1100px){.g-dash,.g-2{grid-template-columns:1fr}}
+@media (max-width:960px){
+  #login{grid-template-columns:1fr}
+  .login-art{display:none}
+  .login-card .logo{display:flex}
+  .login-side{background:transparent}
+  .sidebar{left:10px;right:10px;top:auto;bottom:10px;width:auto;height:70px;flex-direction:row;padding:8px;border-radius:22px}
+  .sidebar .logo,.sidebar .side-bottom,.nav-label{display:none}
+  .nav{display:flex;width:100%;gap:2px}
+  .nav a{flex:1;flex-direction:column;justify-content:center;gap:3px;height:54px;padding:0;font-size:10.5px}
+  .nav a .cnt{display:none}
+  .nav-pill{height:54px;top:0}
+  .main{margin-left:0;padding:14px 14px 110px}
+  .topbar::before{inset:0 -14px}
+  .search-trigger{min-width:0;width:44px;padding:0;justify-content:center}
+  .search-trigger .st-t,.search-trigger .kbd{display:none}
+  .mob-only{display:grid}
+  #toasts{right:10px;bottom:92px}
+  .page-title{font-size:26px}
+}
+@media (max-width:640px){
+  .g4{grid-template-columns:1fr 1fr;gap:12px}
+  .stat{padding:16px}
+  .stat .val{font-size:24px}
+  .stat .delta{top:14px;right:14px;font-size:11px;padding:3px 7px}
+  .stat .ic{width:38px;height:38px;border-radius:12px}
+  .stat .lbl{margin-top:12px;font-size:12.5px}
+  .card{padding:16px}
+  .row2{grid-template-columns:1fr}
+  .bars{gap:5px;height:200px}
+  .bar-col .m{font-size:10px}
+  .donut-wrap{flex-direction:column;align-items:stretch}
+  .donut{margin:0 auto}
+  .modal{padding:22px;border-radius:22px}
+  .modal-bg{align-items:end;padding:10px}
+  .toolbar .inp-wrap{max-width:none;min-width:100%}
+  .toolbar select.inp{flex:1}
+  .profile .acts{margin-left:0;width:100%}
+  .profile .acts .btn{flex:1}
+  .tbl-wrap{margin:0 -16px -16px;padding:0 16px 10px}
+  /* table -> cards */
+  table.resp thead{display:none}
+  table.resp,table.resp tbody{display:block}
+  table.resp tr{display:grid;grid-template-columns:1fr auto;gap:6px 10px;padding:14px;border-radius:16px;background:var(--surface);border:1px solid var(--border);margin-bottom:10px}
+  table.resp td{display:block;padding:0;background:none!important;border:0!important;border-radius:0!important;white-space:normal}
+  table.resp td[data-l]::before{content:attr(data-l);display:block;font-size:11px;color:var(--dim);text-transform:uppercase;letter-spacing:.6px}
+  table.resp td.first{grid-column:1/-1}
+  table.resp td.act{grid-column:1/-1;text-align:left;border-top:1px solid var(--border)!important;padding-top:8px;width:auto}
+  #toasts{right:10px;bottom:90px}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+
+<div id="preloader">
+  <div style="text-align:center">
+    <div class="pl-logo">
+      <svg width="82" height="78" viewBox="0 0 84 80" fill="none">
+        <path class="draw" d="M3 3h36a37 37 0 0 1 0 74H3z" stroke="#fff" stroke-width="3"/>
+        <circle class="draw" cx="38" cy="40" r="16" stroke="#fff" stroke-width="3" style="animation-delay:.3s"/>
+        <path class="draw" d="M22 40h32M38 24v32M25 32h26M25 48h26" stroke="#fff" stroke-width="2.4" style="animation-delay:.5s"/>
+        <ellipse class="draw" cx="38" cy="40" rx="7" ry="16" stroke="#fff" stroke-width="2.4" style="animation-delay:.6s"/>
+      </svg>
+      <div style="text-align:left">
+        <div class="pl-word"><span>data life</span></div>
+        <div class="pl-sub">Learning Centre</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="bg"><div class="grid"></div><div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div><div class="noise"></div></div>
+<div class="cursor-glow" id="cglow"></div>
+
+<!-- LOGIN -->
+<section id="login" class="hidden">
+  <div class="login-art">
+    <canvas id="globe"></canvas>
+    <div class="la-top"><div class="logo" data-logo="light"></div></div>
+    <div class="la-bottom">
+      <h1>Управляйте центром<br><em>на одном экране</em></h1>
+      <p>Студенты, группы и оплаты Data Life Learning Centre — в одной панели управления.</p>
+      <div class="la-stats">
+        <div><b>Студенты</b><span>карточки и история</span></div>
+        <div><b>Группы</b><span>состав и выручка</span></div>
+        <div><b>Оплаты</b><span>аналитика по месяцам</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="login-side">
+    <div class="login-card">
+      <div class="logo" data-logo></div>
+      <h2>Вход в панель</h2>
+      <div class="sub">Введите данные администратора</div>
+      <form id="loginForm" class="stack" autocomplete="on">
+        <div class="field" data-f="username">
+          <label>Логин</label>
+          <div class="inp-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            <input class="inp" name="username" placeholder="admin" autocomplete="username" required>
+          </div>
+        </div>
+        <div class="field" data-f="password">
+          <label>Пароль</label>
+          <div class="inp-wrap">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg>
+            <input class="inp" name="password" type="password" placeholder="••••••••" autocomplete="current-password" required>
+            <button type="button" class="eye" data-eye title="Показать пароль"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button>
+          </div>
+        </div>
+        <div class="err" id="loginErr"></div>
+        <button class="btn btn-primary btn-block" type="submit"><span>Войти</span><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+      </form>
+      <div class="login-foot">
+        <span>© Data Life Learning Centre</span>
+        <button type="button" id="srvToggle">Сервер API</button>
+      </div>
+      <div class="server-box" id="srvBox">
+        <div class="field" style="padding-top:6px"><input class="inp" id="srvInput" spellcheck="false"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APP -->
+<div id="app" class="hidden">
+  <aside class="sidebar">
+    <div class="logo" data-logo></div>
+    <nav class="nav" id="nav">
+      <div class="nav-pill" id="navPill"></div>
+      <a href="#/dashboard" data-r="dashboard"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="7" height="9" rx="2"/><rect x="14" y="3" width="7" height="5" rx="2"/><rect x="14" y="12" width="7" height="9" rx="2"/><rect x="3" y="16" width="7" height="5" rx="2"/></svg><span>Обзор</span></a>
+      <a href="#/students" data-r="students"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg><span>Студенты</span><em class="cnt" data-c="students">0</em></a>
+      <a href="#/groups" data-r="groups"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14.5a4.5 4.5 0 0 1 4.5 4.5"/></svg><span>Группы</span><em class="cnt" data-c="groups">0</em></a>
+      <a href="#/payments" data-r="payments"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg><span>Оплаты</span><em class="cnt" data-c="payments">0</em></a>
+      <a href="#/users" data-r="users"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/><path d="M9 12l2 2 4-4"/></svg><span>Админы</span></a>
+    </nav>
+    <div class="side-bottom">
+      <div class="side-tools">
+        <button class="btn btn-ghost btn-sm" id="themeBtn" title="Тема"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg><span>Тема</span></button>
+        <button class="btn btn-ghost btn-sm" id="reloadBtn" title="Обновить"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-2.6-6.4L21 8"/><path d="M21 3v5h-5"/></svg><span>Обновить</span></button>
+      </div>
+      <div class="me-card">
+        <div class="av" id="meAv">A</div>
+        <div style="min-width:0"><div class="nm" id="meName">admin</div><div class="rl" id="meRole">Администратор</div></div>
+        <button class="icon-btn" id="logoutBtn" title="Выйти"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg></button>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <div class="crumbs" id="crumbs"></div>
+        <div class="page-title" id="pageTitle">Обзор</div>
+      </div>
+      <button class="search-trigger" id="cmdBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><span class="st-t">Поиск по системе…</span><span class="kbd">Ctrl K</span></button>
+      <button class="icon-btn mob-only" id="themeBtnM" title="Тема"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg></button>
+      <button class="icon-btn mob-only" id="logoutBtnM" title="Выйти"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4M10 17l5-5-5-5M15 12H3"/></svg></button>
+    </div>
+    <div id="view"></div>
+  </main>
+</div>
+
+<div id="toasts"></div>
+
+<script>
+/* =========================================================
+   Data Life · Admin — single-file frontend
+   Backend: Django DRF + SimpleJWT (DataLifeAdmin)
+   ========================================================= */
+const DEFAULT_BASE = 'https://dl-admin-system.vercel.app';
+const LS = {base:'dl_base', access:'dl_access', refresh:'dl_refresh', theme:'dl_theme'};
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const store = {
+  get(k){ try{return localStorage.getItem(k)}catch(e){return null} },
+  set(k,v){ try{localStorage.setItem(k,v)}catch(e){} },
+  del(k){ try{localStorage.removeItem(k)}catch(e){} }
+};
+const S = { students:[], groups:[], payments:[], users:[], me:null, loaded:false };
+const base = () => (store.get(LS.base) || DEFAULT_BASE).replace(/\/+$/,'');
+
+/* ---------- utils ---------- */
+const esc = v => String(v ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const fmt = n => Math.round(Number(n)||0).toLocaleString('ru-RU').replace(/,/g,' ');
+const money = n => fmt(n) + ' сум';
+const short = n => { n = Number(n)||0; if (n>=1e9) return (n/1e9).toFixed(1).replace('.0','')+' млрд'; if (n>=1e6) return (n/1e6).toFixed(1).replace('.0','')+' млн'; if (n>=1e3) return Math.round(n/1e3)+' тыс'; return String(n); };
+const MONTHS = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+const MONTHS_FULL = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const d = s => s ? new Date(s.length===10 ? s+'T00:00:00' : s) : null;
+const fdate = s => { const x=d(s); if (!x || isNaN(x)) return '—'; const o={day:'numeric',month:'short'}; if (x.getFullYear()!==new Date().getFullYear()) o.year='numeric'; return x.toLocaleDateString('ru-RU',o).replace(' г.',''); };
+const fdt = s => { const x=d(s); return x && !isNaN(x) ? x.toLocaleString('ru-RU',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}) : '—'; };
+const ym = s => { const x=d(s); return x && !isNaN(x) ? x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0') : ''; };
+const nowYM = () => ym(new Date().toISOString());
+const prevYM = (k=1) => { const x=new Date(); x.setDate(1); x.setMonth(x.getMonth()-k); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0'); };
+const today = () => { const x=new Date(); return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0'); };
+const plural = (n, a, b, c) => { n=Math.abs(n)%100; const n1=n%10; if(n>10&&n<20) return c; if(n1>1&&n1<5) return b; if(n1===1) return a; return c; };
+const PALETTE = [['#3d8bff','#1a5fdb'],['#22d3ee','#0284c7'],['#a78bfa','#6d28d9'],['#34d399','#059669'],['#fb7185','#e11d48'],['#fbbf24','#d97706'],['#60a5fa','#4338ca'],['#f472b6','#be185d']];
+const hue = s => { let h=0; for (const ch of String(s)) h=(h*31+ch.charCodeAt(0))>>>0; return PALETTE[h%PALETTE.length]; };
+const grad = s => { const [a,b]=hue(s); return `background:linear-gradient(135deg,${a},${b})`; };
+const sName = s => s ? `${s.first_name||''} ${s.last_name||''}`.trim() || ('#'+s.id) : 'Удалён';
+const initials = (a,b) => ((a||'')[0]||'')+((b||'')[0]||'') || '?';
+const av = (s, cls='') => `<div class="av ${cls}" style="${grad(sName(s))}">${esc(initials(s?.first_name, s?.last_name))}</div>`;
+const byId = (arr, id) => arr.find(x => x.id === Number(id));
+const studentGroups = sid => S.groups.filter(g => (g.students||[]).includes(sid));
+const paysOf = (key, id) => S.payments.filter(p => p[key] === id);
+const sum = arr => arr.reduce((a,p)=>a+(Number(p.amount)||0),0);
+
+const ic = (svg, n) => svg.replace(/width="\d+" height="\d+"/, `width="${n}" height="${n}"`);
+const I = {
+  plus:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+  edit:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>',
+  del:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></svg>',
+  x:'<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+  search:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+  cap:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10L12 5 2 10l10 5 10-5z"/><path d="M6 12v5c3 2 9 2 12 0v-5"/></svg>',
+  users:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20a6.5 6.5 0 0 1 13 0"/><circle cx="17" cy="9" r="2.5"/><path d="M17 14.5a4.5 4.5 0 0 1 4.5 4.5"/></svg>',
+  card:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="3"/><path d="M2 10h20M6 15h4"/></svg>',
+  trend:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 17l6-6 4 4 8-8"/><path d="M14 7h7v7"/></svg>',
+  phone:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.4 1.8.7 2.7a2 2 0 0 1-.5 2.1L8 9.8a16 16 0 0 0 6 6l1.3-1.3a2 2 0 0 1 2.1-.4c.9.3 1.8.6 2.7.7a2 2 0 0 1 1.7 2z"/></svg>',
+  cal:'<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M16 3v4M8 3v4M3 10h18"/></svg>',
+  ok:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12l5 5L20 7"/></svg>',
+  warn:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9L1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0z"/></svg>',
+  info:'<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>',
+  arrow:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>',
+  back:'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M19 12H5M11 18l-6-6 6-6"/></svg>',
+  dl:'<svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></svg>',
+  shield:'<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6l8-4z"/></svg>',
+  sortar:'<svg width="10" height="10" viewBox="0 0 10 10"><path d="M5 2l3 5H2z" fill="currentColor"/></svg>'
+};
+
+/* ---------- logo ---------- */
+function logoMark(size=40, fg='#fff', bg='#1a5fdb'){
+  return `<svg class="mark" width="${size}" height="${size*80/84}" viewBox="0 0 84 80"><path d="M2 2h37a38 38 0 0 1 0 76H2z" fill="${fg}"/><g fill="none" stroke="${bg}" stroke-width="3.2"><circle cx="38" cy="40" r="16"/><ellipse cx="38" cy="40" rx="7" ry="16"/></g><g stroke="${bg}" stroke-width="2.6"><path d="M22 40h32M25 31.5h26M25 48.5h26"/></g></svg>`;
+}
+function renderLogos(){
+  const dark = document.documentElement.dataset.theme === 'dark';
+  $$('[data-logo]').forEach(el => {
+    const light = el.dataset.logo === 'light';
+    const fg = light || dark ? '#fff' : '#1a5fdb';
+    const bg = light ? '#1a5fdb' : (dark ? '#030919' : '#eef3fd');
+    el.innerHTML = `<div style="position:relative">${light ? logoMark(46,'#fff','#1a5fdb') : `<div style="width:46px;height:46px;border-radius:14px;background:#1a5fdb;display:grid;place-items:center;box-shadow:0 10px 24px -8px #1a5fdb">${logoMark(28,'#fff','#1a5fdb')}</div>`}</div><div class="wm"><b>data life</b><i>Learning Centre</i></div>`;
+  });
+}
+
+/* ---------- theme ---------- */
+function setTheme(t){ document.documentElement.dataset.theme = t; store.set(LS.theme,t); renderLogos(); }
+setTheme(store.get(LS.theme) || 'dark');
+$('#themeBtn').onclick = $('#themeBtnM').onclick = () => setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark');
+
+/* ---------- toast ---------- */
+function toast(msg, type='ok'){
+  const t = document.createElement('div');
+  t.className = 'toast '+type;
+  t.innerHTML = `<div class="ti">${type==='ok'?I.ok:type==='bad'?I.warn:I.info}</div><div style="flex:1;font-size:14.5px">${esc(msg)}</div><div class="bar-t"></div>`;
+  $('#toasts').appendChild(t);
+  setTimeout(()=>{ t.classList.add('out'); setTimeout(()=>t.remove(),400); }, 4000);
+}
+
+/* ---------- API ---------- */
+class ApiError extends Error { constructor(status, data){ super(apiMsg(status,data)); this.status=status; this.data=data; } }
+function apiMsg(status, data){
+  if (status === 0) return 'Нет связи с сервером. Проверьте адрес API и интернет.';
+  if (status === 401) return 'Сессия истекла — войдите снова';
+  if (status === 403) return 'Нет доступа: нужен аккаунт администратора (is_staff)';
+  if (status === 404) return 'Не найдено';
+  if (status === 429) return 'Слишком много запросов. Подождите минуту.';
+  if (data && typeof data === 'object'){
+    if (data.detail) return String(data.detail);
+    const k = Object.keys(data)[0];
+    if (k) return `${k}: ${[].concat(data[k]).join(' ')}`;
+  }
+  return 'Ошибка сервера ('+status+')';
+}
+let refreshing = null;
+async function refreshToken(){
+  const r = store.get(LS.refresh); if (!r) return false;
+  if (!refreshing) refreshing = fetch(base()+'/api/refresh/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({refresh:r})})
+    .then(async res => { if(!res.ok) return false; const j=await res.json(); store.set(LS.access,j.access); if(j.refresh) store.set(LS.refresh,j.refresh); return true; })
+    .catch(()=>false).finally(()=>setTimeout(()=>refreshing=null,0));
+  return refreshing;
+}
+async function api(path, {method='GET', body, auth=true, retry=true}={}){
+  const headers = {'Accept':'application/json'};
+  if (body !== undefined) headers['Content-Type'] = 'application/json';
+  const tk = store.get(LS.access);
+  if (auth && tk) headers['Authorization'] = 'Bearer '+tk;
+  let res;
+  try { res = await fetch(base()+path, {method, headers, body: body!==undefined ? JSON.stringify(body) : undefined}); }
+  catch(e){ throw new ApiError(0, null); }
+  if (res.status === 401 && auth && retry){
+    if (await refreshToken()) return api(path, {method, body, auth, retry:false});
+    logout(true); throw new ApiError(401, null);
+  }
+  let data = null;
+  if (res.status !== 204){ const txt = await res.text(); try{ data = txt ? JSON.parse(txt) : null; }catch(e){ data = {detail: txt.slice(0,160)}; } }
+  if (!res.ok) throw new ApiError(res.status, data);
+  return data;
+}
+/* PageNumberPagination: walk all pages via ?page=N (no reliance on absolute `next` URLs) */
+async function fetchAll(path){
+  const sep = path.includes('?') ? '&' : '?';
+  // page_size is ignored unless backend sets page_size_query_param — then everything comes in one request
+  const first = await api(`${path}${sep}page_size=1000`);
+  if (Array.isArray(first)) return first;
+  let out = first.results || [];
+  const total = first.count || out.length;
+  const per = out.length || 20;
+  const pages = Math.ceil(total / per);
+  const rest = []; for (let p = 2; p <= pages; p++) rest.push(p);
+  // parallel with limited concurrency
+  const res = new Array(rest.length);
+  let k = 0;
+  await Promise.all(Array.from({length:Math.min(6, rest.length)}, async () => {
+    while (k < rest.length){ const i = k++; const r = await api(`${path}${sep}page_size=1000&page=${rest[i]}`); res[i] = r.results || []; }
+  }));
+  return out.concat(...res);
+}
+
+/* ---------- auth ---------- */
+async function login(username, password){
+  const j = await api('/api/token/', {method:'POST', body:{username, password}, auth:false});
+  store.set(LS.access, j.access); store.set(LS.refresh, j.refresh);
+}
+function logout(silent){
+  store.del(LS.access); store.del(LS.refresh);
+  Object.assign(S,{students:[],groups:[],payments:[],users:[],me:null,loaded:false});
+  closeAllModals();
+  showLogin();
+  if (silent) toast('Сессия истекла — войдите снова','info');
+}
+$('#logoutBtn').onclick = $('#logoutBtnM').onclick = () => confirmBox('Выйти из панели?','Вы сможете войти снова в любой момент.','Выйти', async()=>logout());
+
+/* ---------- data ---------- */
+const loaders = {
+  students: async()=> S.students = await fetchAll('/api/student/'),
+  groups:   async()=> S.groups   = await fetchAll('/api/group/'),
+  payments: async()=> S.payments = await fetchAll('/api/payment/'),
+  users:    async()=> S.users    = S.me?.is_staff ? await fetchAll('/api/user/') : []
+};
+async function load(...keys){
+  await Promise.all(keys.map(k => loaders[k]()));
+  updateCounts();
+}
+async function loadAll(){
+  S.me = await api('/api/user/me/');
+  renderMe();
+  if (!S.me.is_staff){ S.loaded = true; return; }
+  await load('students','groups','payments','users');
+  S.loaded = true;
+}
+function updateCounts(){
+  $$('[data-c]').forEach(el => { el.textContent = S[el.dataset.c].length; });
+}
+function renderMe(){
+  const m = S.me||{};
+  const full = [m.first_name, m.last_name].filter(Boolean).join(' ') || m.username || 'admin';
+  $('#meName').textContent = full;
+  $('#meRole').textContent = m.is_superuser ? 'Суперадмин' : m.is_staff ? 'Администратор' : 'Пользователь';
+  const a = $('#meAv'); a.textContent = initials(m.first_name||m.username, m.last_name||'').toUpperCase(); a.setAttribute('style', grad(full));
+}
+
+/* ---------- screens ---------- */
+function showLogin(){
+  $('#app').classList.add('hidden');
+  $('#login').classList.remove('hidden');
+  $('#srvInput').value = base();
+  startGlobe();
+}
+async function showApp(){
+  $('#login').classList.add('hidden');
+  $('#app').classList.remove('hidden');
+  stopGlobe();
+  $('#view').innerHTML = skeleton();
+  try { await loadAll(); }
+  catch(e){ if (e.status!==401) { $('#view').innerHTML = errorView(e.message); } return; }
+  if (!location.hash || location.hash==='#/' ) location.hash = '#/dashboard'; else route();
+}
+
+/* ---------- login form ---------- */
+$('#loginForm').addEventListener('submit', async e => {
+  e.preventDefault();
+  const f = e.target, btn = f.querySelector('button[type=submit]');
+  const u = f.username.value.trim(), p = f.password.value;
+  $('#loginErr').textContent = '';
+  $$('.field', f).forEach(x=>x.classList.remove('bad'));
+  btn.disabled = true; const old = btn.innerHTML; btn.innerHTML = '<div class="spin"></div><span>Проверяем…</span>';
+  try { await login(u,p); toast('Добро пожаловать!'); f.reset(); await showApp(); }
+  catch(err){
+    $$('.field', f).forEach(x=>{ x.classList.remove('bad'); void x.offsetWidth; x.classList.add('bad'); });
+    $('#loginErr').textContent = err.status===401 ? 'Неверный логин или пароль' : err.message;
+  } finally { btn.disabled=false; btn.innerHTML = old; }
+});
+$$('[data-eye]').forEach(b => b.onclick = () => { const i=b.parentElement.querySelector('input'); i.type = i.type==='password'?'text':'password'; });
+$('#srvToggle').onclick = () => $('#srvBox').classList.toggle('open');
+$('#srvInput').addEventListener('change', e => { const v=e.target.value.trim(); if(v){ store.set(LS.base, v); toast('Адрес API сохранён','info'); } });
+
+/* ---------- router ---------- */
+const TITLES = {dashboard:'Обзор', students:'Студенты', groups:'Группы', payments:'Оплаты', users:'Администраторы'};
+function route(){
+  if ($('#app').classList.contains('hidden')) return;
+  const [, name='dashboard', id] = location.hash.replace(/^#/,'').split('/');
+  const r = TITLES[name] ? name : 'dashboard';
+  $$('#nav a').forEach(a => a.classList.toggle('on', a.dataset.r===r));
+  movePill();
+  let crumbs = `<a href="#/dashboard">Data Life</a><span>/</span><span>${TITLES[r]}</span>`;
+  let title = TITLES[r];
+  if (S.me && !S.me.is_staff){ setView(noStaffView()); setHead('Нет доступа', crumbs); return; }
+  let html;
+  if (r==='students' && id){ const s=byId(S.students,id); html = s ? studentView(s) : notFound(); title = s ? sName(s) : 'Не найдено'; crumbs = `<a href="#/students">Студенты</a><span>/</span><span>Карточка</span>`; }
+  else if (r==='groups' && id){ const g=byId(S.groups,id); html = g ? groupView(g) : notFound(); title = g ? g.name : 'Не найдено'; crumbs = `<a href="#/groups">Группы</a><span>/</span><span>Группа</span>`; }
+  else html = VIEWS[r]();
+  setHead(title, crumbs);
+  setView(html);
+  if (!id) AFTER[r]?.();
+}
+function setHead(title, crumbs){ $('#pageTitle').textContent = title; $('#crumbs').innerHTML = crumbs; document.title = title + ' · Data Life'; }
+function setView(html){
+  const v = $('#view'); v.classList.remove('view-enter'); v.innerHTML = html; void v.offsetWidth; v.classList.add('view-enter');
+  window.scrollTo(0,0);
+  bindFx(v);
+}
+function rerender(){ const y = window.scrollY; route(); window.scrollTo(0,y); }
+window.addEventListener('hashchange', route);
+function movePill(){
+  const on = $('#nav a.on'), pill = $('#navPill');
+  if (!on){ pill.style.opacity=0; return; }
+  pill.style.opacity = 1;
+  const mobile = innerWidth <= 960;
+  if (mobile){ pill.style.top='0'; pill.style.width = on.offsetWidth+'px'; pill.style.right='auto'; pill.style.transform = `translateX(${on.offsetLeft}px)`; }
+  else { pill.style.width=''; pill.style.right='0'; pill.style.top='0'; pill.style.transform = `translateY(${on.offsetTop}px)`; }
+}
+addEventListener('resize', movePill);
+$('#reloadBtn').onclick = async () => { const b=$('#reloadBtn'); b.disabled=true; try{ await load('students','groups','payments','users'); rerender(); toast('Данные обновлены','info'); }catch(e){ toast(e.message,'bad'); } b.disabled=false; };
+
+/* ---------- generic views ---------- */
+function skeleton(){
+  return `<div class="grid g4" style="margin-bottom:18px">${'<div class="card"><div class="sk" style="height:46px;width:46px"></div><div class="sk" style="height:14px;width:60%;margin-top:18px"></div><div class="sk" style="height:30px;width:80%;margin-top:10px"></div></div>'.repeat(4)}</div>
+  <div class="grid g-dash"><div class="card"><div class="sk" style="height:280px"></div></div><div class="card"><div class="sk" style="height:280px"></div></div></div>`;
+}
+function emptyBox(title, text, icon=I.cap, action=''){ return `<div class="empty"><div class="em-ic">${icon}</div><b>${title}</b><div>${text}</div>${action?`<div style="margin-top:18px">${action}</div>`:''}</div>`; }
+function errorView(msg){ return `<div class="card">${emptyBox('Не удалось загрузить данные', esc(msg), I.warn, `<button class="btn btn-primary" onclick="showApp()">Повторить</button> <button class="btn btn-ghost" onclick="logout()">Выйти</button>`)}</div>`; }
+function noStaffView(){ return `<div class="card">${emptyBox('Нужны права администратора','Ваш аккаунт не отмечен как <b>is_staff</b>. Попросите суперадмина выдать доступ.', I.shield, `<button class="btn btn-ghost" onclick="logout()">Выйти</button>`)}</div>`; }
+function notFound(){ return `<div class="card">${emptyBox('Запись не найдена','Возможно, она была удалена.', I.warn, `<a class="btn btn-ghost" href="#/dashboard">${I.back} На главную</a>`)}</div>`; }
+
+/* =========================================================
+   DASHBOARD
+   ========================================================= */
+function monthSeries(n=12){
+  const out=[]; for(let i=n-1;i>=0;i--) out.push(prevYM(i));
+  return out;
+}
+function dashboardView(){
+  const h = new Date().getHours();
+  const hi = h<5?'Доброй ночи':h<12?'Доброе утро':h<18?'Добрый день':'Добрый вечер';
+  const name = S.me?.first_name || S.me?.username || '';
+  const cur = nowYM(), prev = prevYM(1);
+  const payCur = S.payments.filter(p=>ym(p.created_at)===cur), payPrev = S.payments.filter(p=>ym(p.created_at)===prev);
+  const revCur = sum(payCur), revPrev = sum(payPrev), revAll = sum(S.payments);
+  const delta = revPrev ? Math.round((revCur-revPrev)/revPrev*100) : (revCur?100:0);
+  const newSt = S.students.filter(s=>ym(s.joined_at)===cur).length;
+  const inGroups = new Set(S.groups.flatMap(g=>g.students||[]));
+  const avgSize = S.groups.length ? (S.groups.reduce((a,g)=>a+(g.students||[]).length,0)/S.groups.length) : 0;
+
+  const series = monthSeries(innerWidth<640?6:12);
+  const vals = series.map(m => sum(S.payments.filter(p=>ym(p.created_at)===m)));
+  const max = Math.max(...vals, 1);
+  const nice = niceMax(max);
+  const stSeries = monthSeries(8).map(m => S.students.filter(s=>ym(s.joined_at)===m).length);
+
+  // by group (donut)
+  const byGroup = S.groups.map(g=>({g, v:sum(paysOf('group',g.id))})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v);
+  const top = byGroup.slice(0,5); const rest = sum(byGroup.slice(5).map(x=>({amount:x.v})));
+  if (rest) top.push({g:{name:'Остальные'}, v:rest});
+  const totalG = top.reduce((a,x)=>a+x.v,0);
+  const C = 2*Math.PI*64; let off = 0;
+  const colors = ['#3d8bff','#22d3ee','#a78bfa','#34d399','#fbbf24','#5b6f98'];
+  const segs = top.map((x,i)=>{ const len = x.v/totalG*C; const gap = top.length>1?4:0; const s = `<circle class="seg" cx="85" cy="85" r="64" stroke="${colors[i]}" stroke-dasharray="${Math.max(len-gap,0.1)} ${C}" stroke-dashoffset="${-off}" style="animation-delay:${.2+i*.12}s"><title>${esc(x.g.name)}: ${money(x.v)}</title></circle>`; off+=len; return s; }).join('');
+
+  // unpaid this month: students who are in groups but have no payment this month
+  const paidNow = new Set(payCur.map(p=>p.student));
+  const unpaid = S.students.filter(s=>inGroups.has(s.id) && !paidNow.has(s.id));
+  const recent = S.payments.slice().sort((a,b)=>d(b.created_at)-d(a.created_at)).slice(0,7);
+
+  return `
+  <div class="hero">
+    <div>
+      <h1>${hi}${name?`, ${esc(name)}`:''} <span class="wave">👋</span></h1>
+      <p>${MONTHS_FULL[new Date().getMonth()]} ${new Date().getFullYear()} · вот что происходит в центре</p>
+    </div>
+    <div class="actions">
+      <button class="btn btn-ghost" onclick="studentModal()">${I.plus} Студент</button>
+      <button class="btn btn-primary" onclick="paymentModal()">${I.plus} Принять оплату</button>
+    </div>
+  </div>
+
+  <div class="grid g4" style="margin-bottom:18px">
+    ${statCard('Выручка за месяц', revCur, 'сум', I.trend, ['#3d8bff','#1a5fdb'], `<span class="delta ${delta>0?'':delta<0?'neg':'neu'}">${delta>0?'↑':delta<0?'↓':'·'} ${Math.abs(delta)}%</span>`, sparkPath(vals.slice(-8),'a'), 0)}
+    ${statCard('Студенты', S.students.length, '', I.cap, ['#22d3ee','#0284c7'], `<span class="delta ${newSt?'':'neu'}">+${newSt} за месяц</span>`, sparkPath(stSeries,'b'), 1)}
+    ${statCard('Группы', S.groups.length, '', I.users, ['#a78bfa','#6d28d9'], `<span class="delta neu">≈ ${avgSize.toFixed(1)} чел.</span>`, '', 2)}
+    ${statCard('Всего получено', revAll, 'сум', I.card, ['#34d399','#059669'], `<span class="delta neu">${S.payments.length} ${plural(S.payments.length,'оплата','оплаты','оплат')}</span>`, '', 3)}
+  </div>
+
+  <div class="grid g-dash" style="margin-bottom:18px">
+    <div class="card spot reveal" style="animation-delay:.25s">
+      <div class="card-h"><h3>Выручка по месяцам</h3><span class="muted">${series.length} мес.</span></div>
+      <div class="bars">
+        <div class="gls">${[1,.75,.5,.25,0].map(k=>`<div class="gl" style="bottom:${k*100}%"><span>${k?short(nice*k):'0'}</span></div>`).join('')}</div>
+        ${series.map((m,i)=>{ const [y,mo]=m.split('-'); const hgt = vals[i]/nice*100; return `<div class="bar-col"><div class="bar-area"><div class="bar ${m===cur?'cur':''}" style="height:${Math.max(hgt,1.5)}%;animation-delay:${.3+i*.05}s" onclick="goPayMonth('${m}')"><div class="tip">${MONTHS_FULL[+mo-1]}: ${money(vals[i])}</div></div></div><div class="m">${MONTHS[+mo-1]}</div></div>`; }).join('')}
+      </div>
+    </div>
+    <div class="card spot reveal" style="animation-delay:.35s">
+      <div class="card-h"><h3>Доля групп в выручке</h3></div>
+      ${totalG ? `<div class="donut-wrap">
+        <div class="donut"><svg width="170" height="170" viewBox="0 0 170 170"><circle cx="85" cy="85" r="64" fill="none" stroke="var(--surface-2)" stroke-width="16"/>${segs}</svg>
+        <div class="ctr"><div><b>${short(totalG)}</b><span>сум всего</span></div></div></div>
+        <div class="legend">${top.map((x,i)=>`<div><i style="background:${colors[i]}"></i><span>${esc(x.g.name)}</span><b>${Math.round(x.v/totalG*100)}%</b></div>`).join('')}</div>
+      </div>` : emptyBox('Пока нет оплат','Распределение появится после первой оплаты', I.card)}
+    </div>
+  </div>
+
+  <div class="grid g-2">
+    <div class="card spot reveal" style="animation-delay:.45s">
+      <div class="card-h"><h3>Последние оплаты</h3><a class="btn btn-ghost btn-sm" href="#/payments">Все ${I.arrow}</a></div>
+      ${recent.length ? `<div class="list">${recent.map(p=>{ const s=byId(S.students,p.student), g=byId(S.groups,p.group); return `<div class="li" onclick="location.hash='#/students/${p.student}'">${av(s)}<div class="t"><b>${esc(sName(s))}</b><span>${esc(g?.name||'—')} · ${fdt(p.created_at)}</span></div><div class="amt">+${fmt(p.amount)}</div></div>`; }).join('')}</div>` : emptyBox('Оплат ещё нет','Нажмите «Принять оплату», чтобы добавить первую', I.card)}
+    </div>
+    <div class="card spot reveal" style="animation-delay:.55s">
+      <div class="card-h"><h3>Не оплатили в ${MONTHS_FULL[new Date().getMonth()].toLowerCase().replace(/ь$/,'е').replace(/й$/,'е').replace(/т$/,'те')}</h3><span class="chip ${unpaid.length?'warn':'ok'}"><span class="dot"></span>${unpaid.length}</span></div>
+      ${unpaid.length ? `<div class="list">${unpaid.slice(0,7).map(s=>`<div class="li" onclick="location.hash='#/students/${s.id}'">${av(s)}<div class="t"><b>${esc(sName(s))}</b><span>${studentGroups(s.id).map(g=>esc(g.name)).join(', ')}</span></div><button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();paymentModal({student:${s.id}})">${I.plus} Оплата</button></div>`).join('')}</div>${unpaid.length>7?`<div class="muted" style="font-size:13px;margin-top:10px;padding-left:10px">и ещё ${unpaid.length-7}…</div>`:''}` : emptyBox('Все оплатили 🎉','У всех студентов в группах есть оплата за этот месяц', I.ok)}
+    </div>
+  </div>`;
+}
+function niceMax(v){ const p = Math.pow(10, Math.floor(Math.log10(v))); const n = v/p; return (n<=1?1:n<=2?2:n<=2.5?2.5:n<=5?5:10)*p; }
+function sparkPath(arr, uid='s'){
+  if (!arr.length || Math.max(...arr)===0) return '';
+  const w=200,h=60,m=Math.max(...arr,1);
+  const pts = arr.map((v,i)=>[i/(arr.length-1||1)*w, h-4-(v/m)*(h-12)]);
+  const line = pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none"><defs><linearGradient id="sg${uid}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="currentColor" stop-opacity=".35"/><stop offset="1" stop-color="currentColor" stop-opacity="0"/></linearGradient></defs><path d="${line} L${w} ${h} L0 ${h}Z" fill="url(#sg${uid})"/><path d="${line}" fill="none" stroke="currentColor" stroke-width="2"/></svg>`;
+}
+function statCard(label, value, unit, icon, [c1,c2], badge, spark, i){
+  return `<div class="card spot stat tilt reveal" style="--c1:${c1};--c2:${c2};animation-delay:${i*.08}s;color:var(--text)">
+    <div class="ic">${icon}</div>${badge}
+    <div class="lbl">${label}</div>
+    <div class="val"><span data-count="${value}">0</span>${unit?`<small>${unit}</small>`:''}</div>
+    <div style="color:${c1}">${spark}</div>
+  </div>`;
+}
+window.goPayMonth = m => { PF.month = m; location.hash = '#/payments'; };
+
+/* =========================================================
+   STUDENTS
+   ========================================================= */
+const SF = { q:'', group:'', sort:'created', dir:-1, page:1 };
+const PER = 25;
+function studentsView(){
+  return `
+  <div class="toolbar">
+    <div class="inp-wrap">${I.search}<input class="inp" id="sQ" placeholder="Имя, фамилия или телефон…" value="${esc(SF.q)}"></div>
+    <select class="inp" id="sG"><option value="">Все группы</option><option value="none" ${SF.group==='none'?'selected':''}>Без группы</option>${S.groups.map(g=>`<option value="${g.id}" ${String(SF.group)===String(g.id)?'selected':''}>${esc(g.name)}</option>`).join('')}</select>
+    <div class="sp"></div>
+    <button class="btn btn-ghost" onclick="exportStudents()">${I.dl} CSV</button>
+    <button class="btn btn-primary" onclick="studentModal()">${I.plus} Добавить студента</button>
+  </div>
+  <div class="card"><div class="tbl-wrap" id="sTbl"></div></div>`;
+}
+function filteredStudents(){
+  const q = SF.q.toLowerCase().trim();
+  let arr = S.students.filter(s => !q || `${s.first_name} ${s.last_name} ${s.phone} ${s.last_name} ${s.first_name}`.toLowerCase().includes(q));
+  if (SF.group==='none') arr = arr.filter(s => !studentGroups(s.id).length);
+  else if (SF.group) arr = arr.filter(s => studentGroups(s.id).some(g => g.id===Number(SF.group)));
+  const key = {name:s=>sName(s).toLowerCase(), age:s=>s.age, joined:s=>s.joined_at||'', paid:s=>sum(paysOf('student',s.id)), created:s=>s.id}[SF.sort];
+  return arr.sort((a,b)=>{ const x=key(a), y=key(b); return (x>y?1:x<y?-1:0)*SF.dir; });
+}
+function renderStudentsTable(){
+  const arr = filteredStudents();
+  const pages = Math.max(1, Math.ceil(arr.length/PER)); SF.page = Math.min(SF.page, pages);
+  const slice = arr.slice((SF.page-1)*PER, SF.page*PER);
+  const cur = nowYM();
+  const th = (k, l) => `<th class="sort ${SF.sort===k?(SF.dir>0?'asc':'desc'):''}" data-sort="${k}">${l}<span class="ar">${I.sortar}</span></th>`;
+  $('#sTbl').innerHTML = !S.students.length ? emptyBox('Студентов пока нет','Добавьте первого студента — это займёт 10 секунд', I.cap, `<button class="btn btn-primary" onclick="studentModal()">${I.plus} Добавить</button>`)
+   : !arr.length ? emptyBox('Ничего не найдено','Попробуйте изменить запрос или фильтр', I.search)
+   : `<table class="resp"><thead><tr>${th('name','Студент')}<th>Телефон</th>${th('age','Возраст').replace('<th ','<th data-age ')}<th>Группы</th>${th('joined','Пришёл')}${th('paid','Оплачено')}<th>Этот месяц</th><th></th></tr></thead><tbody>
+    ${slice.map((s,i)=>{ const gs = studentGroups(s.id); const paid = sum(paysOf('student',s.id)); const paidNow = S.payments.some(p=>p.student===s.id && ym(p.created_at)===cur);
+      return `<tr style="animation-delay:${i*.025}s" onclick="location.hash='#/students/${s.id}'">
+      <td class="first"><div class="who">${av(s)}<div><b>${esc(sName(s))}</b><span>ID ${s.id}</span></div></div></td>
+      <td data-l="Телефон" class="mono" style="font-size:13.5px">${esc(s.phone)||'—'}</td>
+      <td data-l="Возраст" data-age>${esc(s.age)} ${plural(s.age,'год','года','лет')}</td>
+      <td data-l="Группы">${gs.length ? `<span class="chip">${esc(gs[0].name)}</span>` + (gs.length>1?`<span class="chip mute" title="${esc(gs.slice(1).map(g=>g.name).join(', '))}">+${gs.length-1}</span>`:'') : '<span class="chip mute">—</span>'}</td>
+      <td data-l="Пришёл">${fdate(s.joined_at)}</td>
+      <td data-l="Оплачено"><span class="amount">${fmt(paid)}</span></td>
+      <td data-l="Этот месяц">${!gs.length ? '<span class="chip mute">нет группы</span>' : paidNow ? '<span class="chip ok"><span class="dot"></span>оплачено</span>' : '<span class="chip warn"><span class="dot"></span>ожидается</span>'}</td>
+      <td class="act" onclick="event.stopPropagation()"><button class="icon-btn" title="Оплата" onclick="paymentModal({student:${s.id}})">${ic(I.card,17)}</button><button class="icon-btn" title="Изменить" onclick="studentModal(${s.id})">${I.edit}</button><button class="icon-btn del" title="Удалить" onclick="deleteStudent(${s.id})">${I.del}</button></td>
+    </tr>`; }).join('')}
+  </tbody></table>${pager(arr.length, SF.page, pages, 'SF')}`;
+  $$('#sTbl th[data-sort]').forEach(t => t.onclick = () => { const k=t.dataset.sort; SF.dir = SF.sort===k ? -SF.dir : 1; SF.sort=k; renderStudentsTable(); });
+}
+function pager(total, page, pages, st){
+  if (pages<=1) return `<div class="pager"><span>Всего: ${total}</span></div>`;
+  return `<div class="pager"><span>${(page-1)*PER+1}–${Math.min(page*PER,total)} из ${total}</span><div class="btns"><button class="btn btn-ghost btn-sm" ${page<=1?'disabled':''} onclick="${st}.page--;${st==='SF'?'renderStudentsTable':'renderPaymentsTable'}()">${I.back}</button><button class="btn btn-ghost btn-sm" ${page>=pages?'disabled':''} onclick="${st}.page++;${st==='SF'?'renderStudentsTable':'renderPaymentsTable'}()">${I.arrow}</button></div></div>`;
+}
+function afterStudents(){
+  renderStudentsTable();
+  $('#sQ').oninput = e => { SF.q = e.target.value; SF.page=1; renderStudentsTable(); };
+  $('#sG').onchange = e => { SF.group = e.target.value; SF.page=1; renderStudentsTable(); };
+}
+
+function studentView(s){
+  const gs = studentGroups(s.id);
+  const pays = paysOf('student', s.id).sort((a,b)=>d(b.created_at)-d(a.created_at));
+  const total = sum(pays);
+  const last = pays[0];
+  const months = Math.max(1, Math.round((Date.now()-d(s.joined_at))/(30.4*864e5)));
+  return `
+  <div style="margin-bottom:16px"><a class="btn btn-ghost btn-sm" href="#/students">${I.back} Все студенты</a></div>
+  <div class="card reveal" style="margin-bottom:18px">
+    <div class="profile-banner"></div>
+    <div class="profile" style="position:relative">
+      ${av(s,'lg')}
+      <div>
+        <h2>${esc(sName(s))}</h2>
+        <div class="meta">
+          <span>${I.phone} <a href="tel:${esc(s.phone)}" class="mono">${esc(s.phone)||'—'}</a></span>
+          <span>${I.cal} с ${fdate(s.joined_at)}</span>
+          <span>${esc(s.age)} ${plural(s.age,'год','года','лет')}</span>
+        </div>
+      </div>
+      <div class="acts">
+        <button class="btn btn-ghost" onclick="studentModal(${s.id})">${I.edit} Изменить</button>
+        <button class="btn btn-danger" onclick="deleteStudent(${s.id})">${I.del}</button>
+        <button class="btn btn-primary" onclick="paymentModal({student:${s.id}})">${I.plus} Оплата</button>
+      </div>
+    </div>
+    <div class="kv">
+      <div><span>Всего оплачено</span><b class="mono">${fmt(total)}</b></div>
+      <div><span>Оплат</span><b>${pays.length}</b></div>
+      <div><span>Последняя оплата</span><b>${last ? fdate(last.created_at) : '—'}</b></div>
+      <div><span>С нами</span><b>${months} ${plural(months,'месяц','месяца','месяцев')}</b></div>
+    </div>
+  </div>
+  <div class="grid g-2">
+    <div class="card spot reveal" style="animation-delay:.1s">
+      <div class="card-h"><h3>Группы</h3><button class="btn btn-ghost btn-sm" onclick="studentGroupsModal(${s.id})">${I.edit} Управлять</button></div>
+      ${gs.length ? `<div class="list">${gs.map(g=>`<div class="li" onclick="location.hash='#/groups/${g.id}'"><div class="av" style="${grad(g.name)}">${esc(g.name.slice(0,2))}</div><div class="t"><b>${esc(g.name)}</b><span>${(g.students||[]).length} ${plural((g.students||[]).length,'студент','студента','студентов')}</span></div><span class="muted">${I.arrow}</span></div>`).join('')}</div>` : emptyBox('Не состоит в группах','Добавьте студента в группу', I.users, `<button class="btn btn-ghost btn-sm" onclick="studentGroupsModal(${s.id})">${I.plus} В группу</button>`)}
+    </div>
+    <div class="card spot reveal" style="animation-delay:.2s">
+      <div class="card-h"><h3>История оплат</h3><span class="muted">${pays.length}</span></div>
+      ${pays.length ? `<div class="list">${pays.map(p=>{ const g=byId(S.groups,p.group); return `<div class="li" onclick="paymentModal(null, ${p.id})"><div class="av" style="background:rgba(47,211,154,.15);color:var(--ok)">${I.ok}</div><div class="t"><b>${esc(g?.name||'—')}</b><span>${fdt(p.created_at)}</span></div><div class="amt">+${fmt(p.amount)}</div></div>`; }).join('')}</div>` : emptyBox('Оплат нет','Примите первую оплату от студента', I.card)}
+    </div>
+  </div>`;
+}
+
+/* =========================================================
+   GROUPS
+   ========================================================= */
+function groupsView(){
+  if (!S.groups.length) return `<div class="card">${emptyBox('Групп ещё нет','Создайте первую группу и добавьте в неё студентов', I.users, `<button class="btn btn-primary" onclick="groupModal()">${I.plus} Создать группу</button>`)}</div>`;
+  const maxN = Math.max(...S.groups.map(g=>(g.students||[]).length), 1);
+  const cur = nowYM();
+  return `
+  <div class="toolbar">
+    <div class="inp-wrap">${I.search}<input class="inp" id="gQ" placeholder="Поиск группы…"></div>
+    <div class="sp"></div>
+    <button class="btn btn-primary" onclick="groupModal()">${I.plus} Новая группа</button>
+  </div>
+  <div class="gcards" id="gCards">
+    ${S.groups.map((g,i)=>{ const st=(g.students||[]).map(id=>byId(S.students,id)).filter(Boolean); const rev=sum(paysOf('group',g.id).filter(p=>ym(p.created_at)===cur)); const paidSet=new Set(paysOf('group',g.id).filter(p=>ym(p.created_at)===cur).map(p=>p.student));
+      return `<div class="card spot gcard tilt reveal" data-name="${esc(g.name.toLowerCase())}" style="animation-delay:${i*.05}s" onclick="location.hash='#/groups/${g.id}'">
+        <div class="gtop"><div class="gico" style="${grad(g.name)}">${esc(g.name.slice(0,2).toUpperCase())}</div><button class="icon-btn" onclick="event.stopPropagation();groupModal(${g.id})" title="Изменить">${I.edit}</button></div>
+        <h3>${esc(g.name)}</h3>
+        <div class="gmeta">${st.length} ${plural(st.length,'студент','студента','студентов')} · с ${fdate(g.created_at)}</div>
+        <div class="progress" title="Оплатили в этом месяце"><i style="width:${st.length?Math.round(st.filter(s=>paidSet.has(s.id)).length/st.length*100):0}%;animation-delay:${.3+i*.05}s"></i></div>
+        <div class="gbottom">
+          <div class="stack-av">${st.slice(0,5).map(s=>av(s,'sm')).join('')}${st.length>5?`<div class="av sm more">+${st.length-5}</div>`:''}${!st.length?'<span class="muted" style="font-size:13px">пусто</span>':''}</div>
+          <div class="gsum"><b>${fmt(rev)}</b><span>сум в этом месяце</span></div>
+        </div>
+      </div>`; }).join('')}
+    <div class="card add-card reveal" style="animation-delay:${S.groups.length*.05}s;cursor:pointer;min-height:220px" onclick="groupModal()"><div><div class="plus">${I.plus}</div><b style="font-weight:500">Новая группа</b></div></div>
+  </div>`;
+}
+function afterGroups(){
+  const q = $('#gQ'); if (!q) return;
+  q.oninput = () => { const v=q.value.toLowerCase().trim(); $$('#gCards .gcard').forEach(c => c.style.display = !v || c.dataset.name.includes(v) ? '' : 'none'); };
+}
+function groupView(g){
+  const st = (g.students||[]).map(id=>byId(S.students,id)).filter(Boolean);
+  const pays = paysOf('group', g.id).sort((a,b)=>d(b.created_at)-d(a.created_at));
+  const cur = nowYM();
+  const paidNow = new Set(pays.filter(p=>ym(p.created_at)===cur).map(p=>p.student));
+  const revCur = sum(pays.filter(p=>ym(p.created_at)===cur));
+  return `
+  <div style="margin-bottom:16px"><a class="btn btn-ghost btn-sm" href="#/groups">${I.back} Все группы</a></div>
+  <div class="card reveal" style="margin-bottom:18px">
+    <div class="profile-banner" style="background:linear-gradient(120deg,${hue(g.name).join(',')})"></div>
+    <div class="profile" style="position:relative">
+      <div class="av lg" style="${grad(g.name)}">${esc(g.name.slice(0,2))}</div>
+      <div><h2>${esc(g.name)}</h2><div class="meta"><span>${I.cal} создана ${fdate(g.created_at)}</span><span>обновлена ${fdate(g.updated_at)}</span></div></div>
+      <div class="acts">
+        <button class="btn btn-ghost" onclick="groupModal(${g.id})">${I.edit} Изменить</button>
+        <button class="btn btn-primary" onclick="paymentModal({group:${g.id}})">${I.plus} Оплата</button>
+      </div>
+    </div>
+    <div class="kv">
+      <div><span>Студентов</span><b>${st.length}</b></div>
+      <div><span>Оплатили в этом месяце</span><b>${st.filter(s=>paidNow.has(s.id)).length} / ${st.length}</b></div>
+      <div><span>Выручка за месяц</span><b class="mono">${fmt(revCur)}</b></div>
+      <div><span>Выручка всего</span><b class="mono">${fmt(sum(pays))}</b></div>
+    </div>
+  </div>
+  <div class="grid g-2">
+    <div class="card spot reveal" style="animation-delay:.1s">
+      <div class="card-h"><h3>Состав группы</h3><button class="btn btn-ghost btn-sm" onclick="groupModal(${g.id})">${I.edit} Состав</button></div>
+      ${st.length ? `<div class="list">${st.map(s=>`<div class="li" onclick="location.hash='#/students/${s.id}'">${av(s)}<div class="t"><b>${esc(sName(s))}</b><span class="mono">${esc(s.phone)}</span></div>${paidNow.has(s.id)?'<span class="chip ok"><span class="dot"></span>оплачено</span>':`<button class="btn btn-ghost btn-sm" onclick="event.stopPropagation();paymentModal({student:${s.id},group:${g.id}})">${I.plus} Оплата</button>`}</div>`).join('')}</div>` : emptyBox('В группе пока никого','Добавьте студентов в группу', I.cap, `<button class="btn btn-primary btn-sm" onclick="groupModal(${g.id})">${I.plus} Добавить</button>`)}
+    </div>
+    <div class="card spot reveal" style="animation-delay:.2s">
+      <div class="card-h"><h3>Оплаты группы</h3><span class="muted">${pays.length}</span></div>
+      ${pays.length ? `<div class="list">${pays.slice(0,30).map(p=>{ const s=byId(S.students,p.student); return `<div class="li" onclick="paymentModal(null, ${p.id})">${av(s)}<div class="t"><b>${esc(sName(s))}</b><span>${fdt(p.created_at)}</span></div><div class="amt">+${fmt(p.amount)}</div></div>`; }).join('')}</div>` : emptyBox('Оплат нет','Оплаты этой группы появятся здесь', I.card)}
+    </div>
+  </div>`;
+}
+
+/* =========================================================
+   PAYMENTS
+   ========================================================= */
+const PF = { q:'', group:'', month:'', page:1, sort:'date', dir:-1 };
+function paymentsView(){
+  const months = [...new Set(S.payments.map(p=>ym(p.created_at)))].sort().reverse();
+  if (PF.month && !months.includes(PF.month)) months.unshift(PF.month);
+  return `
+  <div class="pills" id="pSum"></div>
+  <div class="toolbar">
+    <div class="inp-wrap">${I.search}<input class="inp" id="pQ" placeholder="Поиск по студенту…" value="${esc(PF.q)}"></div>
+    <select class="inp" id="pG"><option value="">Все группы</option>${S.groups.map(g=>`<option value="${g.id}" ${String(PF.group)===String(g.id)?'selected':''}>${esc(g.name)}</option>`).join('')}</select>
+    <select class="inp" id="pM"><option value="">Все месяцы</option>${months.map(m=>{ const [y,mo]=m.split('-'); return `<option value="${m}" ${PF.month===m?'selected':''}>${MONTHS_FULL[+mo-1]} ${y}</option>`; }).join('')}</select>
+    <div class="sp"></div>
+    <button class="btn btn-ghost" onclick="exportPayments()">${I.dl} CSV</button>
+    <button class="btn btn-primary" onclick="paymentModal()">${I.plus} Принять оплату</button>
+  </div>
+  <div class="card"><div class="tbl-wrap" id="pTbl"></div></div>`;
+}
+function filteredPayments(){
+  const q = PF.q.toLowerCase().trim();
+  let arr = S.payments.filter(p => {
+    if (PF.group && p.group !== Number(PF.group)) return false;
+    if (PF.month && ym(p.created_at) !== PF.month) return false;
+    if (q){ const s = byId(S.students,p.student); if (!(`${sName(s)} ${s?.phone||''}`).toLowerCase().includes(q)) return false; }
+    return true;
+  });
+  const key = {date:p=>d(p.created_at)?.getTime()||0, amount:p=>p.amount, student:p=>sName(byId(S.students,p.student)).toLowerCase()}[PF.sort];
+  return arr.sort((a,b)=>{ const x=key(a), y=key(b); return (x>y?1:x<y?-1:0)*PF.dir; });
+}
+function renderPaymentsTable(){
+  const arr = filteredPayments();
+  const total = sum(arr);
+  $('#pSum').innerHTML = `
+    <div class="pill reveal"><span>Сумма по фильтру</span><b class="mono">${fmt(total)} <small class="muted" style="font-size:13px">сум</small></b></div>
+    <div class="pill reveal" style="animation-delay:.06s"><span>Количество оплат</span><b>${arr.length}</b></div>
+    <div class="pill reveal" style="animation-delay:.12s"><span>Средний чек</span><b class="mono">${fmt(arr.length?total/arr.length:0)}</b></div>
+    <div class="pill reveal" style="animation-delay:.18s"><span>Уникальных студентов</span><b>${new Set(arr.map(p=>p.student)).size}</b></div>`;
+  const pages = Math.max(1, Math.ceil(arr.length/PER)); PF.page = Math.min(PF.page, pages);
+  const slice = arr.slice((PF.page-1)*PER, PF.page*PER);
+  const th = (k, l) => `<th class="sort ${PF.sort===k?(PF.dir>0?'asc':'desc'):''}" data-sort="${k}">${l}<span class="ar">${I.sortar}</span></th>`;
+  $('#pTbl').innerHTML = !S.payments.length ? emptyBox('Оплат пока нет','Примите первую оплату — она сразу появится в аналитике', I.card, `<button class="btn btn-primary" onclick="paymentModal()">${I.plus} Принять оплату</button>`)
+   : !arr.length ? emptyBox('Ничего не найдено','Измените фильтры', I.search)
+   : `<table class="resp"><thead><tr>${th('student','Студент')}<th>Группа</th>${th('amount','Сумма')}${th('date','Дата')}<th></th></tr></thead><tbody>
+    ${slice.map((p,i)=>{ const s=byId(S.students,p.student), g=byId(S.groups,p.group); return `<tr style="animation-delay:${i*.025}s" onclick="paymentModal(null, ${p.id})">
+      <td class="first"><div class="who">${av(s)}<div><b>${esc(sName(s))}</b><span>#${p.id}</span></div></div></td>
+      <td data-l="Группа">${g?`<span class="chip">${esc(g.name)}</span>`:'—'}</td>
+      <td data-l="Сумма"><span class="amount" style="color:var(--ok)">+${fmt(p.amount)}</span></td>
+      <td data-l="Дата">${fdt(p.created_at)}</td>
+      <td class="act" onclick="event.stopPropagation()"><button class="icon-btn" title="Изменить" onclick="paymentModal(null, ${p.id})">${I.edit}</button><button class="icon-btn del" title="Удалить" onclick="deletePayment(${p.id})">${I.del}</button></td>
+    </tr>`; }).join('')}</tbody></table>${pager(arr.length, PF.page, pages, 'PF')}`;
+  $$('#pTbl th[data-sort]').forEach(t => t.onclick = () => { const k=t.dataset.sort; PF.dir = PF.sort===k ? -PF.dir : 1; PF.sort=k; renderPaymentsTable(); });
+}
+function afterPayments(){
+  renderPaymentsTable();
+  $('#pQ').oninput = e => { PF.q=e.target.value; PF.page=1; renderPaymentsTable(); };
+  $('#pG').onchange = e => { PF.group=e.target.value; PF.page=1; renderPaymentsTable(); };
+  $('#pM').onchange = e => { PF.month=e.target.value; PF.page=1; renderPaymentsTable(); };
+}
+
+/* =========================================================
+   USERS (admins)
+   ========================================================= */
+function usersView(){
+  return `
+  <div class="toolbar"><div class="muted" style="font-size:14px">Аккаунты, у которых есть доступ к этой панели</div><div class="sp"></div><button class="btn btn-primary" onclick="userModal()">${I.plus} Новый аккаунт</button></div>
+  <div class="card"><div class="tbl-wrap">${!S.users.length ? emptyBox('Нет аккаунтов','', I.shield) : `<table class="resp"><thead><tr><th>Пользователь</th><th>Email</th><th>Роль</th><th>Статус</th><th>Последний вход</th><th></th></tr></thead><tbody>
+    ${S.users.map((u,i)=>{ const nm=[u.first_name,u.last_name].filter(Boolean).join(' '); return `<tr style="animation-delay:${i*.03}s;cursor:default">
+      <td class="first"><div class="who"><div class="av" style="${grad(u.username)}">${esc(initials(u.first_name||u.username,u.last_name))}</div><div><b>${esc(u.username)}</b><span>${esc(nm)||'—'}</span></div></div></td>
+      <td data-l="Email">${esc(u.email)||'—'}</td>
+      <td data-l="Роль">${u.is_superuser?'<span class="chip">Суперадмин</span>':u.is_staff?'<span class="chip">Админ</span>':'<span class="chip mute">Пользователь</span>'}</td>
+      <td data-l="Статус">${u.is_active?'<span class="chip ok"><span class="dot"></span>активен</span>':'<span class="chip bad"><span class="dot"></span>отключён</span>'}</td>
+      <td data-l="Последний вход">${u.last_login?fdt(u.last_login):'—'}</td>
+      <td class="act">${u.id===S.me?.id?'<span class="chip mute">это вы</span>':`<button class="icon-btn" title="Изменить" onclick="userModal(${u.id})">${I.edit}</button><button class="icon-btn del" title="Удалить" onclick="deleteUser(${u.id})">${I.del}</button>`}</td>
+    </tr>`; }).join('')}</tbody></table>`}</div></div>`;
+}
+
+const VIEWS = { dashboard:dashboardView, students:studentsView, groups:groupsView, payments:paymentsView, users:usersView };
+const AFTER = { dashboard:()=>countUp(), students:afterStudents, groups:afterGroups, payments:afterPayments };
+
+/* =========================================================
+   MODALS
+   ========================================================= */
+function openModal(html, {wide=false, cls=''}={}){
+  const bg = document.createElement('div');
+  bg.className = 'modal-bg';
+  bg.innerHTML = `<div class="modal ${wide?'wide':''} ${cls}" role="dialog" aria-modal="true">${html}</div>`;
+  document.body.appendChild(bg);
+  requestAnimationFrame(()=>bg.classList.add('in'));
+  const close = () => { bg.classList.remove('in'); setTimeout(()=>bg.remove(), 350); document.removeEventListener('keydown', onKey); };
+  const onKey = e => { if (e.key==='Escape' && document.querySelectorAll('.modal-bg').length && bg===[...document.querySelectorAll('.modal-bg')].pop()) close(); };
+  document.addEventListener('keydown', onKey);
+  bg.addEventListener('mousedown', e => { if (e.target===bg) close(); });
+  $$('[data-close]', bg).forEach(b => b.onclick = close);
+  bindRipples(bg);
+  setTimeout(()=>{ const f = bg.querySelector('input:not([type=hidden]):not([type=checkbox]),select'); if (f && innerWidth>640) f.focus(); }, 80);
+  return {el:bg.firstElementChild, close};
+}
+function closeAllModals(){ $$('.modal-bg').forEach(m=>m.remove()); }
+function modalHead(title, sub){ return `<div class="modal-h"><div><h3>${title}</h3>${sub?`<p>${sub}</p>`:''}</div><button class="icon-btn" type="button" data-close>${I.x}</button></div>`; }
+function fieldErrors(form, data){
+  $$('.field', form).forEach(f=>{ f.classList.remove('bad'); const e=f.querySelector('.err'); if(e) e.textContent=''; });
+  if (!data || typeof data!=='object') return false;
+  let any = false;
+  for (const [k,v] of Object.entries(data)){
+    const f = form.querySelector(`.field[data-f="${k}"]`);
+    if (f){ any = true; f.classList.add('bad'); let e=f.querySelector('.err'); if(!e){ e=document.createElement('div'); e.className='err'; f.appendChild(e);} e.textContent=[].concat(v).join(' '); }
+  }
+  return any;
+}
+async function submitWith(form, fn){
+  const btn = form.querySelector('[type=submit]'); const old = btn.innerHTML;
+  btn.disabled = true; btn.innerHTML = '<div class="spin"></div>';
+  try { await fn(); return true; }
+  catch(e){ if (!fieldErrors(form, e.data)) toast(e.message, 'bad'); return false; }
+  finally { btn.disabled=false; btn.innerHTML=old; }
+}
+function confirmBox(title, text, okText, fn){
+  const m = openModal(`<div class="confirm-ic">${I.warn}</div><h3 style="font-size:22px;font-weight:500">${title}</h3><p class="muted" style="margin-top:6px">${text}</p>
+    <form><div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button type="submit" class="btn btn-danger" style="background:var(--bad);color:#fff">${okText}</button></div></form>`);
+  m.el.querySelector('form').onsubmit = async e => { e.preventDefault(); if (await submitWith(e.target, fn)) m.close(); };
+}
+
+/* ---- student ---- */
+window.studentModal = (id) => {
+  const s = id ? byId(S.students,id) : null;
+  const m = openModal(`${modalHead(s?'Редактировать студента':'Новый студент', s?esc(sName(s)):'Заполните карточку студента')}
+    <form>
+      <div class="row2">
+        <div class="field" data-f="first_name"><label>Имя</label><input class="inp" name="first_name" value="${esc(s?.first_name)}" required maxlength="100" placeholder="Азиз"></div>
+        <div class="field" data-f="last_name"><label>Фамилия</label><input class="inp" name="last_name" value="${esc(s?.last_name)}" required maxlength="100" placeholder="Каримов"></div>
+      </div>
+      <div class="field" data-f="phone"><label>Телефон</label><input class="inp mono" name="phone" value="${esc(s?.phone||'+998 ')}" required maxlength="20" inputmode="tel"></div>
+      <div class="row2">
+        <div class="field" data-f="age"><label>Возраст</label><input class="inp" name="age" type="number" min="0" max="120" value="${esc(s?.age ?? 12)}" required></div>
+        <div class="field" data-f="joined_at"><label>Дата прихода</label><input class="inp" name="joined_at" type="date" value="${esc(s?.joined_at||today())}" required></div>
+      </div>
+      ${!s && S.groups.length ? `<div class="field"><label>Сразу добавить в группу</label><select class="inp" name="group"><option value="">— не добавлять —</option>${S.groups.map(g=>`<option value="${g.id}">${esc(g.name)}</option>`).join('')}</select></div>`:''}
+      <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button type="submit" class="btn btn-primary">${s?'Сохранить':'Добавить'}</button></div>
+    </form>`);
+  m.el.querySelector('form').onsubmit = async e => {
+    e.preventDefault(); const f = e.target;
+    const body = { first_name:f.first_name.value.trim(), last_name:f.last_name.value.trim(), phone:f.phone.value.trim(), age:Number(f.age.value), joined_at:f.joined_at.value };
+    const ok = await submitWith(f, async () => {
+      const res = s ? await api(`/api/student/${s.id}/`, {method:'PATCH', body}) : await api('/api/student/', {method:'POST', body});
+      const gid = f.group?.value;
+      if (!s && gid){ const g = byId(S.groups,gid); await api(`/api/group/${gid}/`, {method:'PATCH', body:{students:[...(g.students||[]), res.id]}}); await load('groups'); }
+      await load('students');
+      toast(s ? 'Изменения сохранены' : `${body.first_name} добавлен(а) 🎉`);
+    });
+    if (ok){ m.close(); rerender(); }
+  };
+};
+window.deleteStudent = id => {
+  const s = byId(S.students,id);
+  const n = paysOf('student',id).length;
+  confirmBox('Удалить студента?', `<b>${esc(sName(s))}</b> будет удалён без возможности восстановления${n?`, вместе с ${n} ${plural(n,'оплатой','оплатами','оплатами')}`:''}.`, 'Удалить', async () => {
+    await api(`/api/student/${id}/`, {method:'DELETE'});
+    await load('students','groups','payments');
+    toast('Студент удалён');
+    if (location.hash.startsWith('#/students/')) location.hash = '#/students'; else rerender();
+  });
+};
+window.studentGroupsModal = sid => {
+  const s = byId(S.students,sid);
+  const sel = new Set(studentGroups(sid).map(g=>g.id));
+  const m = openModal(`${modalHead('Группы студента', esc(sName(s)))}
+    <form><div class="multi-list">${S.groups.length ? S.groups.map(g=>`<div class="multi-opt ${sel.has(g.id)?'on':''}" data-id="${g.id}"><div class="av sm" style="${grad(g.name)}">${esc(g.name.slice(0,2))}</div><div><b>${esc(g.name)}</b><span>${(g.students||[]).length} студ.</span></div><div class="tick">${I.ok}</div></div>`).join('') : '<div class="empty">Сначала создайте группу</div>'}</div>
+    <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button type="submit" class="btn btn-primary">Сохранить</button></div></form>`);
+  $$('.multi-opt', m.el).forEach(o => o.onclick = () => { const id=+o.dataset.id; sel.has(id)?sel.delete(id):sel.add(id); o.classList.toggle('on'); });
+  m.el.querySelector('form').onsubmit = async e => {
+    e.preventDefault();
+    const ok = await submitWith(e.target, async () => {
+      const jobs = S.groups.map(g => { const has=(g.students||[]).includes(sid), want=sel.has(g.id);
+        if (has===want) return null;
+        const students = want ? [...(g.students||[]), sid] : (g.students||[]).filter(x=>x!==sid);
+        return api(`/api/group/${g.id}/`, {method:'PATCH', body:{students}}); }).filter(Boolean);
+      await Promise.all(jobs); await load('groups'); toast('Группы обновлены');
+    });
+    if (ok){ m.close(); rerender(); }
+  };
+};
+
+/* ---- group ---- */
+window.groupModal = id => {
+  const g = id ? byId(S.groups,id) : null;
+  const sel = new Set(g?.students||[]);
+  const list = S.students.slice().sort((a,b)=>sName(a).localeCompare(sName(b)));
+  const m = openModal(`${modalHead(g?'Редактировать группу':'Новая группа', g?'Название и состав':'Название и студенты')}
+    <form>
+      <div class="field" data-f="name"><label>Название группы</label><input class="inp" name="name" value="${esc(g?.name)}" maxlength="100" required placeholder="Python Backend · 14:00"></div>
+      <div class="field" data-f="students">
+        <label style="display:flex;justify-content:space-between">Студенты <span id="selCnt" style="text-transform:none;color:var(--brand-hi)">выбрано ${sel.size}</span></label>
+        <div class="inp-wrap">${I.search}<input class="inp" id="msQ" placeholder="Найти студента…" style="height:44px"></div>
+        <div class="multi-list" id="msList">${list.length ? list.map(s=>`<div class="multi-opt ${sel.has(s.id)?'on':''}" data-id="${s.id}" data-n="${esc((sName(s)+' '+s.phone).toLowerCase())}">${av(s,'sm')}<div><b>${esc(sName(s))}</b><span class="mono">${esc(s.phone)}</span></div><div class="tick">${I.ok}</div></div>`).join('') : '<div class="empty" style="padding:24px">Студентов пока нет</div>'}</div>
+      </div>
+      <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button type="submit" class="btn btn-primary">${g?'Сохранить':'Создать группу'}</button></div>
+    </form>`, {wide:true});
+  const cnt = () => m.el.querySelector('#selCnt').textContent = 'выбрано '+sel.size;
+  $$('.multi-opt', m.el).forEach(o => o.onclick = () => { const id=+o.dataset.id; sel.has(id)?sel.delete(id):sel.add(id); o.classList.toggle('on'); cnt(); });
+  m.el.querySelector('#msQ').oninput = e => { const v=e.target.value.toLowerCase().trim(); $$('.multi-opt', m.el).forEach(o => o.style.display = !v || o.dataset.n.includes(v) ? '' : 'none'); };
+  m.el.querySelector('form').onsubmit = async e => {
+    e.preventDefault(); const f=e.target;
+    const body = { name:f.name.value.trim(), students:[...sel] };
+    const ok = await submitWith(f, async () => {
+      const res = g ? await api(`/api/group/${g.id}/`, {method:'PATCH', body}) : await api('/api/group/', {method:'POST', body});
+      await load('groups'); toast(g ? 'Группа обновлена' : `Группа «${res.name}» создана`);
+      if (!g) setTimeout(()=>location.hash = '#/groups/'+res.id, 50);
+    });
+    if (ok){ m.close(); rerender(); }
+  };
+};
+
+/* ---- payment ---- */
+function picker(name, items, value, placeholder){
+  const cur = items.find(x=>x.id===value);
+  return `<div class="picker" data-picker="${name}"><input type="hidden" name="${name}" value="${value??''}"><div class="inp-wrap">${I.search}<input class="inp" data-pq autocomplete="off" placeholder="${placeholder}" value="${esc(cur?.label||'')}"></div><div class="picker-list"></div></div>`;
+}
+function wirePicker(root, name, items, onPick){
+  const p = root.querySelector(`[data-picker="${name}"]`), q = p.querySelector('[data-pq]'), hid = p.querySelector('input[type=hidden]'), list = p.querySelector('.picker-list');
+  let hl = 0, shown = [];
+  const draw = () => {
+    const v = q.value.toLowerCase().trim();
+    const cur = items.find(x=>String(x.id)===hid.value);
+    shown = items.filter(x => !v || (cur && cur.label.toLowerCase()===v) || x.search.includes(v)).slice(0,40);
+    hl = Math.min(hl, Math.max(shown.length-1,0));
+    list.innerHTML = shown.length ? shown.map((x,i)=>`<div class="picker-opt ${i===hl?'hl':''}" data-i="${i}">${x.html}<span>${esc(x.hint||'')}</span></div>`).join('') : '<div class="picker-opt" style="color:var(--muted)">Ничего не найдено</div>';
+    $$('.picker-opt[data-i]', list).forEach(o => o.onmousedown = ev => { ev.preventDefault(); pick(shown[+o.dataset.i]); });
+  };
+  const pick = x => { if(!x) return; hid.value = x.id; q.value = x.label; p.classList.remove('open'); onPick?.(x); };
+  q.onfocus = () => { q.select(); p.classList.add('open'); draw(); };
+  q.oninput = () => { hid.value=''; hl=0; p.classList.add('open'); draw(); };
+  q.onblur = () => setTimeout(()=>{ p.classList.remove('open'); const cur=items.find(x=>String(x.id)===hid.value); q.value = cur?cur.label:''; }, 120);
+  q.onkeydown = e => {
+    if (!p.classList.contains('open')) return;
+    if (e.key==='ArrowDown'){ e.preventDefault(); hl=Math.min(hl+1,shown.length-1); draw(); list.querySelector('.hl')?.scrollIntoView({block:'nearest'}); }
+    else if (e.key==='ArrowUp'){ e.preventDefault(); hl=Math.max(hl-1,0); draw(); list.querySelector('.hl')?.scrollIntoView({block:'nearest'}); }
+    else if (e.key==='Enter'){ e.preventDefault(); pick(shown[hl]); }
+  };
+  return { set:(id)=>{ const x=items.find(i=>i.id===id); if(x){ hid.value=id; q.value=x.label; } } };
+}
+window.paymentModal = (pre={}, editId) => {
+  pre = pre || {};
+  const p = editId ? byId(S.payments, editId) : null;
+  const st = p?.student ?? pre.student ?? null;
+  let gr = p?.group ?? pre.group ?? null;
+  if (!gr && st){ const gs = studentGroups(st); if (gs.length===1) gr = gs[0].id; }
+  const sItems = S.students.map(s=>({id:s.id, label:sName(s), search:(sName(s)+' '+s.phone).toLowerCase(), hint:s.phone, html:av(s,'sm')+`<b style="font-weight:500">${esc(sName(s))}</b>`}));
+  const gOpts = sid => { const own = sid ? studentGroups(sid).map(g=>g.id) : []; const sorted = S.groups.slice().sort((a,b)=>own.includes(b.id)-own.includes(a.id)); return `<option value="">— выберите группу —</option>`+sorted.map(g=>`<option value="${g.id}" ${g.id===gr?'selected':''}>${esc(g.name)}${own.includes(g.id)?' ★':''}</option>`).join(''); };
+  const last = st ? paysOf('student',st).sort((a,b)=>d(b.created_at)-d(a.created_at))[0] : null;
+  const m = openModal(`${modalHead(p?'Оплата #'+p.id:'Принять оплату', p?`от ${fdt(p.created_at)}`:'Запишите поступление от студента')}
+    <form>
+      ${!S.students.length || !S.groups.length ? `<div class="chip warn" style="height:auto;padding:10px 14px;border-radius:12px">Сначала нужны хотя бы один студент и одна группа</div>`:''}
+      <div class="field" data-f="student"><label>Студент</label>${picker('student', sItems, st, 'Начните вводить имя…')}</div>
+      <div class="field" data-f="group"><label>Группа <span style="text-transform:none;color:var(--dim)">★ — группы студента</span></label><select class="inp" name="group" required>${gOpts(st)}</select></div>
+      <div class="field" data-f="amount"><label>Сумма, сум</label><input class="inp mono" name="amount" inputmode="numeric" required placeholder="500 000" value="${p?fmt(p.amount):last?fmt(last.amount):''}" style="font-size:20px;height:58px">
+        <div class="quick-amts">${[200000,300000,400000,500000,600000,800000].map(v=>`<button type="button" data-a="${v}">${short(v)}</button>`).join('')}</div>
+      </div>
+      <div class="modal-f">${p?`<button type="button" class="btn btn-danger" id="pDel" style="margin-right:auto">${I.del}</button>`:''}<button type="button" class="btn btn-ghost" data-close>Отмена</button><button type="submit" class="btn btn-primary">${p?'Сохранить':'Принять оплату'}</button></div>
+    </form>`);
+  const f = m.el.querySelector('form');
+  wirePicker(m.el, 'student', sItems, x => {
+    f.group.innerHTML = gOpts(x.id);
+    const gs = studentGroups(x.id); if (gs.length===1) f.group.value = gs[0].id; else if (gs.length) f.group.value = gs[0].id;
+    const l = paysOf('student',x.id).sort((a,b)=>d(b.created_at)-d(a.created_at))[0];
+    if (l && !f.amount.value) f.amount.value = fmt(l.amount);
+  });
+  const amt = f.amount;
+  amt.oninput = () => { const digits = amt.value.replace(/\D/g,''); amt.value = digits ? fmt(+digits) : ''; };
+  $$('[data-a]', f).forEach(b => b.onclick = () => { amt.value = fmt(+b.dataset.a); amt.focus(); });
+  if (p) m.el.querySelector('#pDel').onclick = () => { m.close(); deletePayment(p.id); };
+  f.onsubmit = async e => {
+    e.preventDefault();
+    const body = { student:Number(f.student.value), group:Number(f.group.value), amount:Number(amt.value.replace(/\D/g,'')) };
+    if (!body.student){ fieldErrors(f,{student:['Выберите студента из списка']}); return; }
+    if (!body.amount){ fieldErrors(f,{amount:['Введите сумму']}); return; }
+    const ok = await submitWith(f, async () => {
+      if (p) await api(`/api/payment/${p.id}/`, {method:'PATCH', body}); else await api('/api/payment/', {method:'POST', body});
+      await load('payments'); toast(p ? 'Оплата обновлена' : `+${money(body.amount)} принято`);
+      if (!p) confetti();
+    });
+    if (ok){ m.close(); rerender(); }
+  };
+};
+window.deletePayment = id => {
+  const p = byId(S.payments,id), s = byId(S.students,p?.student);
+  confirmBox('Удалить оплату?', `${money(p?.amount)} от <b>${esc(sName(s))}</b> будет удалена.`, 'Удалить', async () => {
+    await api(`/api/payment/${id}/`, {method:'DELETE'}); await load('payments'); toast('Оплата удалена'); rerender();
+  });
+};
+
+/* ---- user ---- */
+window.userModal = id => {
+  const u = id ? byId(S.users,id) : null;
+  const m = openModal(`${modalHead(u?'Редактировать аккаунт':'Новый аккаунт', u?esc(u.username):'Логин и пароль для входа в панель')}
+    <form autocomplete="off">
+      <div class="field" data-f="username"><label>Логин</label><input class="inp" name="username" value="${esc(u?.username)}" required maxlength="150" autocomplete="off"></div>
+      ${!u?`<div class="field" data-f="password"><label>Пароль</label><div class="inp-wrap"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="4" y="10" width="16" height="11" rx="3"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg><input class="inp" name="password" type="password" required minlength="6" autocomplete="new-password"><button type="button" class="eye" data-eye2><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>`:''}
+      <div class="row2">
+        <div class="field" data-f="first_name"><label>Имя</label><input class="inp" name="first_name" value="${esc(u?.first_name)}"></div>
+        <div class="field" data-f="last_name"><label>Фамилия</label><input class="inp" name="last_name" value="${esc(u?.last_name)}"></div>
+      </div>
+      <div class="field" data-f="email"><label>Email</label><input class="inp" name="email" type="email" value="${esc(u?.email)}"></div>
+      <div style="display:flex;gap:24px;flex-wrap:wrap">
+        <label class="check"><input type="checkbox" name="is_staff" ${!u||u.is_staff?'checked':''}><span class="box"></span>Доступ к панели (админ)</label>
+        <label class="check"><input type="checkbox" name="is_active" ${!u||u.is_active?'checked':''}><span class="box"></span>Активен</label>
+      </div>
+      <div class="modal-f"><button type="button" class="btn btn-ghost" data-close>Отмена</button><button type="submit" class="btn btn-primary">${u?'Сохранить':'Создать'}</button></div>
+    </form>`);
+  const eye = m.el.querySelector('[data-eye2]'); if (eye) eye.onclick = () => { const i=eye.parentElement.querySelector('input'); i.type=i.type==='password'?'text':'password'; };
+  m.el.querySelector('form').onsubmit = async e => {
+    e.preventDefault(); const f = e.target;
+    const body = { username:f.username.value.trim(), first_name:f.first_name.value.trim(), last_name:f.last_name.value.trim(), email:f.email.value.trim(), is_staff:f.is_staff.checked, is_active:f.is_active.checked };
+    if (!u) body.password = f.password.value;
+    const ok = await submitWith(f, async () => {
+      if (u) await api(`/api/user/${u.id}/`, {method:'PATCH', body}); else await api('/api/user/', {method:'POST', body});
+      await load('users'); toast(u ? 'Аккаунт обновлён' : 'Аккаунт создан');
+    });
+    if (ok){ m.close(); rerender(); }
+  };
+};
+window.deleteUser = id => {
+  const u = byId(S.users,id);
+  confirmBox('Удалить аккаунт?', `Пользователь <b>${esc(u?.username)}</b> потеряет доступ.`, 'Удалить', async () => {
+    await api(`/api/user/${id}/`, {method:'DELETE'}); await load('users'); toast('Аккаунт удалён'); rerender();
+  });
+};
+
+/* =========================================================
+   COMMAND PALETTE  (Ctrl/⌘ + K)
+   ========================================================= */
+function openCmd(){
+  if ($('#app').classList.contains('hidden') || $('.cmd')) return;
+  const m = openModal(`<div class="cmd-in">${I.search}<input id="cmdQ" placeholder="Студент, группа или действие…" autocomplete="off"><span class="kbd" style="margin:0">Esc</span></div><div class="cmd-res" id="cmdRes"></div><div class="cmd-foot"><span>↑↓ выбрать</span><span>Enter открыть</span></div>`, {cls:'cmd'});
+  const q = m.el.querySelector('#cmdQ'), res = m.el.querySelector('#cmdRes');
+  let hl = 0, items = [];
+  const actions = [
+    {g:'Действия', t:'Принять оплату', s:'новая запись', ic:I.card, run:()=>paymentModal()},
+    {g:'Действия', t:'Добавить студента', s:'новая карточка', ic:I.cap, run:()=>studentModal()},
+    {g:'Действия', t:'Создать группу', s:'название и состав', ic:I.users, run:()=>groupModal()},
+    {g:'Переход', t:'Обзор', s:'дашборд', ic:I.trend, run:()=>location.hash='#/dashboard'},
+    {g:'Переход', t:'Студенты', s:`${S.students.length}`, ic:I.cap, run:()=>location.hash='#/students'},
+    {g:'Переход', t:'Группы', s:`${S.groups.length}`, ic:I.users, run:()=>location.hash='#/groups'},
+    {g:'Переход', t:'Оплаты', s:`${S.payments.length}`, ic:I.card, run:()=>location.hash='#/payments'},
+  ];
+  const draw = () => {
+    const v = q.value.toLowerCase().trim();
+    items = [];
+    if (v){
+      S.students.filter(s=>(sName(s)+' '+s.phone).toLowerCase().includes(v)).slice(0,6).forEach(s=>items.push({g:'Студенты', t:sName(s), s:s.phone, avh:av(s), run:()=>location.hash='#/students/'+s.id}));
+      S.groups.filter(g=>g.name.toLowerCase().includes(v)).slice(0,5).forEach(g=>items.push({g:'Группы', t:g.name, s:`${(g.students||[]).length} студ.`, avh:`<div class="av" style="${grad(g.name)}">${esc(g.name.slice(0,2))}</div>`, run:()=>location.hash='#/groups/'+g.id}));
+    }
+    items.push(...actions.filter(a=>!v || a.t.toLowerCase().includes(v)));
+    hl = Math.min(hl, Math.max(items.length-1,0));
+    let lastG = '';
+    res.innerHTML = items.length ? items.map((x,i)=>{ const h = x.g!==lastG ? `<div class="grp">${x.g}</div>` : ''; lastG=x.g; return h+`<div class="opt ${i===hl?'hl':''}" data-i="${i}">${x.avh||`<div class="av" style="background:var(--surface-2);color:var(--brand-hi)">${ic(x.ic,18)}</div>`}<div class="t"><b>${esc(x.t)}</b><span>${esc(x.s||'')}</span></div><span class="go">${I.arrow}</span></div>`; }).join('') : '<div class="empty">Ничего не найдено</div>';
+    $$('.opt', res).forEach(o => { o.onclick = () => run(+o.dataset.i); o.onmousemove = () => { if (hl!==+o.dataset.i){ hl=+o.dataset.i; $$('.opt',res).forEach(x=>x.classList.toggle('hl', x===o)); } }; });
+  };
+  const run = i => { const x = items[i]; if (!x) return; m.close(); setTimeout(x.run, 60); };
+  q.oninput = () => { hl=0; draw(); };
+  q.onkeydown = e => {
+    if (e.key==='ArrowDown'){ e.preventDefault(); hl=Math.min(hl+1,items.length-1); draw(); res.querySelector('.hl')?.scrollIntoView({block:'nearest'}); }
+    if (e.key==='ArrowUp'){ e.preventDefault(); hl=Math.max(hl-1,0); draw(); res.querySelector('.hl')?.scrollIntoView({block:'nearest'}); }
+    if (e.key==='Enter'){ e.preventDefault(); run(hl); }
+  };
+  draw(); setTimeout(()=>q.focus(), 50);
+}
+$('#cmdBtn').onclick = openCmd;
+document.addEventListener('keydown', e => { if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); openCmd(); } });
+
+/* =========================================================
+   CSV EXPORT
+   ========================================================= */
+function downloadCSV(name, rows){
+  const csv = '﻿' + rows.map(r => r.map(c => `"${String(c??'').replace(/"/g,'""')}"`).join(';')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'})); a.download = name; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href), 1000);
+}
+window.exportPayments = () => { const arr = filteredPayments(); downloadCSV(`datalife-payments-${today()}.csv`, [['ID','Студент','Телефон','Группа','Сумма','Дата'], ...arr.map(p=>{ const s=byId(S.students,p.student), g=byId(S.groups,p.group); return [p.id, sName(s), s?.phone, g?.name, p.amount, fdt(p.created_at)]; })]); toast(`Экспортировано ${arr.length} оплат`,'info'); };
+window.exportStudents = () => { const arr = filteredStudents(); downloadCSV(`datalife-students-${today()}.csv`, [['ID','Имя','Фамилия','Телефон','Возраст','Дата прихода','Группы','Оплачено'], ...arr.map(s=>[s.id, s.first_name, s.last_name, s.phone, s.age, s.joined_at, studentGroups(s.id).map(g=>g.name).join(', '), sum(paysOf('student',s.id))])]); toast(`Экспортировано ${arr.length} студентов`,'info'); };
+
+/* =========================================================
+   EFFECTS
+   ========================================================= */
+function countUp(root=document){
+  $$('[data-count]', root).forEach(el => {
+    const target = Number(el.dataset.count)||0, t0 = performance.now(), dur = 1400;
+    const step = t => { const k = Math.min((t-t0)/dur,1), e = 1-Math.pow(1-k,4); el.textContent = fmt(target*e); if (k<1) requestAnimationFrame(step); };
+    requestAnimationFrame(step);
+  });
+}
+function bindRipples(root){
+  $$('.btn', root).forEach(b => { if (b._r) return; b._r = 1; b.addEventListener('pointerdown', e => {
+    const r = b.getBoundingClientRect(), s = Math.max(r.width,r.height), sp = document.createElement('span');
+    sp.className='ripple'; sp.style.cssText=`width:${s}px;height:${s}px;left:${e.clientX-r.left-s/2}px;top:${e.clientY-r.top-s/2}px`;
+    b.appendChild(sp); setTimeout(()=>sp.remove(),600); }); });
+}
+function bindFx(root){
+  bindRipples(root);
+  if (matchMedia('(hover:hover)').matches){
+    $$('.tilt', root).forEach(c => {
+      c.addEventListener('mousemove', e => { const r=c.getBoundingClientRect(), x=(e.clientX-r.left)/r.width-.5, y=(e.clientY-r.top)/r.height-.5; c.style.transform=`perspective(900px) rotateX(${-y*6}deg) rotateY(${x*8}deg) translateY(-4px)`; });
+      c.addEventListener('mouseleave', () => c.style.transform='');
+    });
+  }
+}
+document.addEventListener('pointermove', e => {
+  const g = $('#cglow'); g.style.left = e.clientX+'px'; g.style.top = e.clientY+'px';
+  const c = e.target.closest?.('.spot'); if (c){ const r=c.getBoundingClientRect(); c.style.setProperty('--mx', (e.clientX-r.left)+'px'); c.style.setProperty('--my', (e.clientY-r.top)+'px'); }
+}, {passive:true});
+bindRipples(document);
+
+function confetti(){
+  const cv = document.createElement('canvas'); cv.style.cssText='position:fixed;inset:0;z-index:300;pointer-events:none'; document.body.appendChild(cv);
+  const dpr = devicePixelRatio||1; cv.width=innerWidth*dpr; cv.height=innerHeight*dpr; const x=cv.getContext('2d'); x.scale(dpr,dpr);
+  const cols=['#3d8bff','#6aaeff','#ffffff','#22d3ee','#1a5fdb','#a9d1ff'];
+  const P = Array.from({length:110},()=>({x:innerWidth/2,y:innerHeight*.45,vx:(Math.random()-.5)*16,vy:-Math.random()*15-4,s:Math.random()*7+4,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:cols[Math.random()*cols.length|0],o:1}));
+  const t0=performance.now();
+  (function f(t){ x.clearRect(0,0,innerWidth,innerHeight); P.forEach(p=>{ p.vy+=.45; p.vx*=.985; p.x+=p.vx; p.y+=p.vy; p.r+=p.vr; p.o=Math.max(0,1-(t-t0)/1800); x.save(); x.globalAlpha=p.o; x.translate(p.x,p.y); x.rotate(p.r); x.fillStyle=p.c; x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2); x.restore(); }); if (t-t0<1800) requestAnimationFrame(f); else cv.remove(); })(t0);
+}
+
+/* ---------- login globe (canvas) ---------- */
+let globeRAF = null;
+function startGlobe(){
+  const cv = $('#globe'); if (!cv || globeRAF || cv.offsetParent===null) return;
+  const ctx = cv.getContext('2d');
+  const N = 1100, pts = [];
+  for (let i=0;i<N;i++){ const y = 1-(i/(N-1))*2, r = Math.sqrt(1-y*y), th = Math.PI*(3-Math.sqrt(5))*i; pts.push([Math.cos(th)*r, y, Math.sin(th)*r]); }
+  const arcs = [];
+  let W,H,dpr, rot=0, tx=0, ty=0, mx=0, my=0;
+  const size = () => { dpr=devicePixelRatio||1; W=cv.clientWidth; H=cv.clientHeight; cv.width=W*dpr; cv.height=H*dpr; ctx.setTransform(dpr,0,0,dpr,0,0); };
+  size(); addEventListener('resize', size);
+  cv.parentElement.onmousemove = e => { const r=cv.getBoundingClientRect(); mx=(e.clientX-r.left)/r.width-.5; my=(e.clientY-r.top)/r.height-.5; };
+  const rotP = ([x,y,z], a, b) => { const ca=Math.cos(a), sa=Math.sin(a); let X=x*ca+z*sa, Z=-x*sa+z*ca; const cb=Math.cos(b), sb=Math.sin(b); const Y=y*cb-Z*sb; Z=y*sb+Z*cb; return [X,Y,Z]; };
+  const slerp = (a,b,t) => { const dot=Math.max(-1,Math.min(1,a[0]*b[0]+a[1]*b[1]+a[2]*b[2])), om=Math.acos(dot), so=Math.sin(om)||1; const k1=Math.sin((1-t)*om)/so, k2=Math.sin(t*om)/so; return [a[0]*k1+b[0]*k2, a[1]*k1+b[1]*k2, a[2]*k1+b[2]*k2]; };
+  const draw = () => {
+    rot += .0025; tx += (mx*.6-tx)*.04; ty += (my*.4-ty)*.04;
+    const R = Math.min(W,H)*.32, cx = W*.6, cy = H*.36;
+    ctx.clearRect(0,0,W,H);
+    const g = ctx.createRadialGradient(cx,cy,R*.2,cx,cy,R*1.5); g.addColorStop(0,'rgba(120,180,255,.25)'); g.addColorStop(1,'rgba(120,180,255,0)'); ctx.fillStyle=g; ctx.beginPath(); ctx.arc(cx,cy,R*1.5,0,7); ctx.fill();
+    // rings
+    ctx.strokeStyle='rgba(255,255,255,.12)'; ctx.lineWidth=1;
+    for (let k=0;k<2;k++){ ctx.beginPath(); ctx.ellipse(cx,cy,R*(1.25+k*.2),R*(.32+k*.06),-.35+ty*.3,0,7); ctx.stroke(); }
+    const a = rot + tx, b = -.35 + ty;
+    for (const p of pts){
+      const [X,Y,Z] = rotP(p,a,b), s = 1/(1.9 - Z*.4);
+      const x = cx + X*R*s*1.2, y = cy + Y*R*s*1.2;
+      const al = Z>0 ? .25+Z*.75 : .07;
+      ctx.fillStyle = `rgba(255,255,255,${al})`; ctx.fillRect(x, y, Z>0?1.8:1.1, Z>0?1.8:1.1);
+    }
+    if (Math.random()<.04 && arcs.length<9) arcs.push({a:pts[Math.random()*N|0], b:pts[Math.random()*N|0], t:0});
+    for (let i=arcs.length-1;i>=0;i--){
+      const A = arcs[i]; A.t += .012;
+      const end = Math.min(A.t,1), start = Math.max(0, A.t-.45);
+      ctx.beginPath(); let vis=false;
+      for (let k=0;k<=24;k++){ const t = start + (end-start)*k/24; const p = slerp(A.a,A.b,t); const lift = 1 + Math.sin(t*Math.PI)*.25; const [X,Y,Z] = rotP([p[0]*lift,p[1]*lift,p[2]*lift],a,b); const s=1/(1.9-Z*.4); const x=cx+X*R*s*1.2, y=cy+Y*R*s*1.2; if (Z>-.2) vis=true; k?ctx.lineTo(x,y):ctx.moveTo(x,y); }
+      if (vis){ ctx.strokeStyle='rgba(160,210,255,.85)'; ctx.lineWidth=1.6; ctx.shadowColor='#9fd0ff'; ctx.shadowBlur=10; ctx.stroke(); ctx.shadowBlur=0; }
+      if (A.t>1.45) arcs.splice(i,1);
+    }
+    globeRAF = requestAnimationFrame(draw);
+  };
+  draw();
+}
+function stopGlobe(){ if (globeRAF) cancelAnimationFrame(globeRAF); globeRAF = null; }
+
+/* =========================================================
+   BOOT
+   ========================================================= */
+renderLogos();
+(async function boot(){
+  const minDelay = new Promise(r=>setTimeout(r, 1500));
+  const hasToken = !!store.get(LS.access);
+  await minDelay;
+  $('#preloader').classList.add('out'); setTimeout(()=>$('#preloader').remove(), 1000);
+  if (hasToken) showApp(); else showLogin();
+})();
+</script>
+</body>
+</html>

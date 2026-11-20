@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.views import View
+from django.shortcuts import render
 from rest_framework import generics, permissions
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -22,3 +24,7 @@ class MeAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
     def get(self, request):
         return Response(UserSerializer(request.user).data, status=200)
+
+class IndexView(View):
+    def get(self, request):
+        return render(request, "index.html")
